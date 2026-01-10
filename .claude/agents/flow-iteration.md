@@ -46,6 +46,35 @@ Your ONLY job is to:
 
 **NEVER write code yourself. ALWAYS use Task tool.**
 
+---
+
+## WHEN ARE YOU DONE?
+
+**You are NOT done until ALL of these are complete:**
+
+1. ✅ Read PRD file and found a story with `passes: false`
+2. ✅ Read the story's `mavenSteps` array
+3. ✅ For EACH mavenStep:
+   - Called `Task(subagent_type="...", prompt="...")`
+   - **WAITED for the agent to complete**
+   - Checked the result
+4. ✅ After ALL agents complete, ran quality checks (typecheck)
+5. ✅ Committed changes with git
+6. ✅ Updated PRD: set `passes: true` and added notes using Edit tool
+7. ✅ Appended to progress file using Edit tool
+
+**ONLY THEN output:**
+```
+<promise>ITERATION_COMPLETE</promise>
+```
+
+**If ALL stories in PRD have `passes: true`, output:**
+```
+<promise>PRD_COMPLETE</promise>
+```
+
+---
+
 ## FORBIDDEN OPERATIONS
 
 You are FORBIDDEN from:
