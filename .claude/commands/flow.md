@@ -8,15 +8,31 @@ hooks:
         - type: command
           command: |
             #!/bin/bash
-            # Validate flow-iteration subagent invocation
-            SUBAGENT_TYPE=$(echo "$TOOL_INPUT" | jq -r '.subagent_type // empty')
-            if [ "$SUBAGENT_TYPE" = "flow-iteration" ]; then
-              # Ensure at least one PRD exists
-              if ! ls docs/prd-*.json 2>/dev/null | grep -q .; then
-                echo "Error: No PRD files found in docs/. Create a PRD first using the flow-prd skill." >&2
-                exit 3
+            # Validate flow-iteration subagent invocation using jq
+            set -e  # Exit on error, but only for actual errors
+
+            # Check if jq is available
+            if command -v jq >/dev/null 2>&1; then
+              # Use jq for robust JSON parsing
+              SUBAGENT_TYPE=$(echo "$TOOL_INPUT" | jq -r '.subagent_type // empty' 2>/dev/null || echo "")
+              if [ "$SUBAGENT_TYPE" = "flow-iteration" ]; then
+                # Ensure at least one PRD exists
+                if ! ls docs/prd-*.json 2>/dev/null | grep -q .; then
+                  echo "Error: No PRD files found in docs/. Create a PRD first using the flow-prd skill." >&2
+                  exit 3
+                fi
+              fi
+            else
+              # Fallback to grep pattern matching (no stderr output)
+              if echo "$TOOL_INPUT" | grep -q '"subagent_type"[[:space:]]*:[[:space:]]*"flow-iteration"'; then
+                if ! ls docs/prd-*.json 2>/dev/null | grep -q .; then
+                  echo "Error: No PRD files found in docs/. Create a PRD first using the flow-prd skill." >&2
+                  exit 3
+                fi
               fi
             fi
+            # Explicit success exit
+            exit 0
           once: false
 ---
 

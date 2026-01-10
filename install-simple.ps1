@@ -17,6 +17,27 @@ Write-Host "  Maven Flow Installation" -ForegroundColor Blue
 Write-Host "===============================================================" -ForegroundColor Blue
 Write-Host ""
 
+# ============================================================================
+# Step 0: Check and install jq (required for Maven Flow hooks)
+# ============================================================================
+Write-Host "[Step 0/5] Checking for jq (JSON processor)..." -ForegroundColor Blue
+
+try {
+    $null = Get-Command jq -ErrorAction Stop
+    $jqVersion = & jq --version 2>$null
+    Write-Host "  [OK] jq found: $jqVersion" -ForegroundColor Green
+} catch {
+    Write-Host "  [WARN] jq not found. Installing jq..." -ForegroundColor Yellow
+    if (Test-Path "$ScriptDir\install\install-jq.ps1") {
+        & "$ScriptDir\install\install-jq.ps1"
+    } else {
+        Write-Host "  [ERROR] jq installer not found. Please install jq manually:" -ForegroundColor Red
+        Write-Host "     Windows: winget install jqlang.jq" -ForegroundColor Cyan
+        Write-Host "     Or download from: https://jqlang.org/download/" -ForegroundColor Cyan
+        exit 1
+    }
+}
+
 # Install globally
 if ($InstallMode -eq "global") {
     Write-Host "Installing globally to $env:USERPROFILE\.claude\"

@@ -15,7 +15,7 @@ The Maven workflow uses:
 - **Skills**: Reusable capabilities invoked automatically
 - **Subagents**: Specialized agents with isolated context windows
 - **Hooks**: Automated triggers for quality enforcement
-- **PRD System**: Task tracking in `docs/prd.json`
+- **PRD System**: Task tracking in `docs/prd-[feature-name].json` (multi-PRD architecture)
 
 ### Agent Coordination
 
@@ -39,7 +39,7 @@ The Maven workflow uses:
                               ▼
                     ┌──────────────────┐
                     │  Shared Context  │
-                    │  (docs/prd.json) │
+                    │  (docs/prd-*.json) │
                     │  (progress.txt)  │
                     └──────────────────┘
 ```
@@ -328,7 +328,7 @@ Use supabase for: "Create table", "Run query", "Check migrations"
 
 ## PRD Integration
 
-**Location**: `docs/prd.json` (not root!)
+**Location**: `docs/prd-[feature-name].json` (multi-PRD architecture)
 
 **Format**:
 ```json
@@ -355,7 +355,7 @@ Use supabase for: "Create table", "Run query", "Check migrations"
 }
 ```
 
-**Progress Tracking**: `docs/progress.txt`
+**Progress Tracking**: `docs/progress-[feature-name].txt`
 
 ---
 
@@ -367,10 +367,10 @@ Use supabase for: "Create table", "Run query", "Check migrations"
 User: Load maven-workflow skill and start new project for [description]
 
 Maven Orchestrator:
-1. Creates docs/prd.json with 10 steps
+1. Creates docs/prd-[feature-name].json with 10 steps
 2. Spawns Development Agent for Step 1
 3. Agent works in isolated context
-4. On completion, updates PRD
+4. On completion, updates PRD JSON (sets passes: true, adds notes)
 5. Hooks validate quality automatically
 6. If issues found, spawn Quality Agent
 7. When step passes, move to next step
@@ -383,7 +383,7 @@ Maven Orchestrator:
 User: /maven-status
 
 Maven Orchestrator:
-1. Reads docs/prd.json
+1. Reads docs/prd-[feature-name].json
 2. Shows current step
 3. Shows completed steps
 4. Shows any issues from hooks
@@ -468,7 +468,7 @@ Each agent has:
 ```
 You: Load maven-workflow and create project for task management app
 
-Maven: Creating docs/prd.json with 10 steps...
+Maven: Creating docs/prd-task-management.json with 10 steps...
 
 [Step 1: Project Foundation]
 Spawning Development Agent...

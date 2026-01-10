@@ -22,6 +22,27 @@ echo -e "${BLUE}  Maven Flow Installation${NC}"
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
 
+# ============================================================================
+# Step 0: Check and install jq (required for Maven Flow hooks)
+# ============================================================================
+echo -e "${BLUE}[Step 0/5]${NC} Checking for jq (JSON processor)..."
+
+if ! command -v jq >/dev/null 2>&1; then
+    echo -e "${YELLOW}  ⚠ jq not found. Installing jq...${NC}"
+    if [ -f "$SCRIPT_DIR/install/install-jq.sh" ]; then
+        bash "$SCRIPT_DIR/install/install-jq.sh"
+    else
+        echo -e "${RED}  ❌ jq installer not found. Please install jq manually:${NC}"
+        echo "     macOS:   brew install jq"
+        echo "     Linux:   sudo apt-get install jq"
+        echo "     Windows: winget install jqlang.jq"
+        exit 1
+    fi
+else
+    JQ_VERSION=$(jq --version)
+    echo -e "${GREEN}  ✓ jq found: $JQ_VERSION${NC}"
+fi
+
 # Install globally
 if [ "$INSTALL_MODE" = "global" ]; then
     echo "Installing globally to ~/.claude/"
