@@ -72,10 +72,10 @@ Task(subagent_type="prd-update", prompt="Update docs/prd-admin-dashboard.json: s
 
 **If you need to create or modify code files, use Task tool with specialist agents:**
 ```
-Task(subagent_type="development-agent", prompt="...")
-Task(subagent_type="refactor-agent", prompt="...")
-Task(subagent_type="quality-agent", prompt="...")
-Task(subagent_type="security-agent", prompt="...")
+Task(subagent_type="development", prompt="...")
+Task(subagent_type="refactor", prompt="...")
+Task(subagent_type="quality", prompt="...")
+Task(subagent_type="security", prompt="...")
 ```
 
 Your Bash tool is ONLY for:
@@ -92,16 +92,16 @@ Each step in the story's `mavenSteps` array maps to a specialist agent:
 
 | Maven Step | Agent | Task subagent_type | Description |
 |------------|-------|-------------------|-------------|
-| 1 | Foundation | development-agent | Import UI with mock data or create from scratch |
-| 2 | Package Manager | development-agent | Convert npm → pnpm |
-| 3 | Feature Structure | refactor-agent | Restructure to feature-based folder structure |
-| 4 | Modularization | refactor-agent | Modularize components >300 lines |
-| 5 | Type Safety | quality-agent | Type safety - no 'any' types, @ aliases |
-| 6 | UI Centralization | refactor-agent | Centralize UI components to @shared/ui |
-| 7 | Data Layer | development-agent | Centralized data layer with backend setup |
-| 8 | Auth Integration | security-agent | Firebase + Supabase authentication flow |
-| 9 | MCP Integration | development-agent | MCP integrations (web-search, web-reader, chrome, expo, supabase) |
-| 10 | Security & Error Handling | security-agent | Security and error handling |
+| 1 | Foundation | development | Import UI with mock data or create from scratch |
+| 2 | Package Manager | development | Convert npm → pnpm |
+| 3 | Feature Structure | refactor | Restructure to feature-based folder structure |
+| 4 | Modularization | refactor | Modularize components >300 lines |
+| 5 | Type Safety | quality | Type safety - no 'any' types, @ aliases |
+| 6 | UI Centralization | refactor | Centralize UI components to @shared/ui |
+| 7 | Data Layer | development | Centralized data layer with backend setup |
+| 8 | Auth Integration | security | Firebase + Supabase authentication flow |
+| 9 | MCP Integration | development | MCP integrations (web-search, web-reader, chrome, expo, supabase) |
+| 10 | Security & Error Handling | security | Security and error handling |
 
 ---
 
@@ -120,7 +120,7 @@ Example:
 {
   "id": "US-001",
   "title": "Add priority field to database",
-  "mavenSteps": [1, 7],  // Means: spawn development-agent for Step 1, then development-agent for Step 7
+  "mavenSteps": [1, 7],  // Means: spawn development for Step 1, then development for Step 7
   ...
 }
 ```
@@ -132,11 +132,11 @@ Example:
 ```
 Story: US-001, mavenSteps: [1, 7]
 
-1. Task tool → development-agent (Step 1: Foundation)
+1. Task tool → development (Step 1: Foundation)
    → Wait for completion
    → Check result
 
-2. Task tool → development-agent (Step 7: Data Layer)
+2. Task tool → development (Step 7: Data Layer)
    → Wait for completion
    → Check result
 
@@ -163,7 +163,7 @@ Bash("npm install ...")  # Use Task tool instead!
 
 **RIGHT - Do THIS:**
 ```
-"Spawning development-agent for Step 1..."
+"Spawning development for Step 1..."
 Task(
   subagent_type="development",
   prompt="PRD file: docs/prd-admin-dashboard.json\nStory: US-001\nStep: 1\nImplement foundation for this story."
@@ -172,10 +172,10 @@ Task(
 ```
 
 **Valid subagent_type values:**
-- `development-agent` - For foundation, data layer, MCP integration
-- `refactor-agent` - For feature structure, modularization, UI
-- `quality-agent` - For type safety and code quality
-- `security-agent` - For auth and security
+- `development` - For foundation, data layer, MCP integration
+- `refactor` - For feature structure, modularization, UI
+- `quality` - For type safety and code quality
+- `security` - For auth and security
 
 **Note:** The Task tool is a BUILT-IN tool. You do NOT need to use npx/npm to call it. Just use `Task(subagent_type="...", prompt="...")` directly.
 
@@ -266,7 +266,43 @@ When specialist agents need help with:
 - **Web testing** → Use Chrome DevTools
 - **Research** → Use web-search-prime and web-reader
 
-**Note:** The specialist agents (development-agent, refactor-agent, etc.) are responsible for using MCP tools. You don't need to use them directly - just delegate to the appropriate agent.
+**Note:** The specialist agents (development, refactor, etc.) are responsible for using MCP tools. You don't need to use them directly - just delegate to the appropriate agent.
+
+---
+
+## Promise Outputs and How to Handle Them
+
+After calling Task tool to spawn an agent, you will receive one of these promise outputs:
+
+### From Specialist Agents (development, refactor, quality, security):
+
+`<promise>STEP_COMPLETE</promise>`
+- **Meaning:** Agent completed successfully
+- **Your Action:** Continue to the next mavenStep or proceed to quality checks
+
+`<promise>BLOCK_COMMIT</promise>` (from quality-agent only)
+- **Meaning:** Critical quality issues found that must be fixed
+- **Your Action:** Do NOT commit. Retry the quality-agent with fix instructions, or notify the user
+
+`<promise>SECURITY_BLOCK</promise>` (from security-agent only)
+- **Meaning:** Critical security vulnerabilities found
+- **Your Action:** Do NOT commit. Notify user immediately with security details
+
+### From prd-update Agent:
+
+`<promise>PRD_UPDATE_COMPLETE</promise>`
+- **Meaning:** PRD or progress file updated successfully
+- **Your Action:** Continue to the next step
+
+### Your Output Promises:
+
+`<promise>ITERATION_COMPLETE</promise>`
+- **Meaning:** You completed all steps for one story (PRD updated, progress logged, committed)
+- **When to Output:** After all 7 completion criteria are met
+
+`<promise>PRD_COMPLETE</promise>`
+- **Meaning:** ALL stories in the current PRD have `passes: true`
+- **When to Output:** When you read the PRD and find no stories with `passes: false`
 
 ---
 
@@ -295,22 +331,22 @@ This signals the flow command to move to the next incomplete PRD.
 1. [Read PRD and progress files]
 2. [Identify mavenSteps: [3, 5, 6, 7]]
 
-3. Spawning refactor-agent for Step 3 (Feature Structure)...
+3. Spawning refactor for Step 3 (Feature Structure)...
    Task(subagent_type="refactor", prompt="...")
    → [Waiting for completion]
    → [Agent completed successfully]
 
-4. Spawning quality-agent for Step 5 (Type Safety)...
+4. Spawning quality for Step 5 (Type Safety)...
    Task(subagent_type="quality", prompt="...")
    → [Waiting for completion]
    → [Agent completed successfully]
 
-5. Spawning refactor-agent for Step 6 (UI Centralization)...
+5. Spawning refactor for Step 6 (UI Centralization)...
    Task(subagent_type="refactor", prompt="...")
    → [Waiting for completion]
    → [Agent completed successfully]
 
-6. Spawning development-agent for Step 7 (Data Layer)...
+6. Spawning development for Step 7 (Data Layer)...
    Task(subagent_type="development", prompt="...")
    → [Waiting for completion]
    → [Agent completed successfully]

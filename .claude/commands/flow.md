@@ -6,7 +6,7 @@ hooks:
     - matcher: "Task"
       hooks:
         - type: command
-          command: node -e "const fs=require('fs');try{const input=JSON.parse(process.env.TOOL_INPUT||'{}');if(input.subagent_type==='flow-iteration'){if(!fs.existsSync('docs')){console.error('Error: No docs/ directory found. Create a PRD first using the flow-prd skill.');process.exit(3);}const prds=fs.readdirSync('docs').filter(f=>f.startsWith('prd-')&&f.endsWith('.json'));if(prds.length===0){console.error('Error: No PRD files found in docs/. Create a PRD first using the flow-prd skill.');process.exit(3);}}process.exit(0);}catch(e){process.exit(0);}"
+          command: node ~/.claude/hooks/pre-task-flow-validation.js
           once: false
 ---
 
@@ -213,10 +213,10 @@ Your Tasks:
 3. Find the first story with passes: false (highest priority)
 4. For that story, read the mavenSteps array
 5. Use the Task tool to spawn specialist agents for EACH mavenStep:
-   - Step 1, 2, 7, 9 → Task(subagent_type="development-agent", prompt="...")
-   - Step 3, 4, 6 → Task(subagent_type="refactor-agent", prompt="...")
-   - Step 5 → Task(subagent_type="quality-agent", prompt="...")
-   - Step 8, 10 → Task(subagent_type="security-agent", prompt="...")
+   - Step 1, 2, 7, 9 → Task(subagent_type="development", prompt="...")
+   - Step 3, 4, 6 → Task(subagent_type="refactor", prompt="...")
+   - Step 5 → Task(subagent_type="quality", prompt="...")
+   - Step 8, 10 → Task(subagent_type="security", prompt="...")
 6. Wait for each agent to complete before starting the next
 7. Run quality checks (typecheck, lint)
 8. Commit changes

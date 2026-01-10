@@ -123,16 +123,15 @@ Run after EVERY task completion (automated via hooks):
 
 1. **Identify PRD file** - You'll be given a specific PRD filename (e.g., `docs/prd-task-priority.json`)
 2. **Read PRD** - Use Read tool to load the PRD file
-3. **Read progress** - Use Read tool to load the corresponding progress file (e.g., `docs/progress-task-priority.txt`)
+3. **Read progress** - Use Read tool to load the corresponding progress file (e.g., `docs/progress-task-priority.txt`) for context
 4. **Extract feature name** - Parse the PRD filename to get the feature name
 5. **Research if needed** - Use web-search-prime/web-reader if you're unsure about something
 6. **Implement** - Complete the step requirements
 7. **Test** - Use Chrome DevTools for web apps, appropriate testing for other platforms
 8. **Validate** - Run quality checks
-9. **Update PRD** - Mark step as complete in the PRD file (set `passes: true`, add notes)
-10. **Log progress** - Append to the progress file
+9. **Output completion** - Output `<promise>STEP_COMPLETE</promise>` (or `<promise>BLOCK_COMMIT</promise>` if quality issues found)
 
-**CRITICAL:** Steps 9 and 10 are MANDATORY. You MUST update the PRD and progress files before completing.
+**NOTE:** PRD and progress file updates will be handled by the flow-iteration coordinator via the prd-update agent. You do NOT need to update them.
 
 ---
 
@@ -512,61 +511,6 @@ Update `tsconfig.json`:
 - [ ] DOM elements render correctly
 - [ ] Styles apply properly
 - [ ] User interactions work as expected
-
----
-
-## How to Update PRD and Progress Files
-
-**CRITICAL: You MUST complete these steps:**
-
-### Update PRD JSON File
-
-1. Use **Read tool** to read the PRD file (e.g., `docs/prd-task-priority.json`)
-2. Find the step you completed
-3. Use **Edit tool** to change `"passes": false` to `"passes": true`
-4. Add notes about what was implemented
-
-**Example:**
-```
-Old string:
-  "id": "STEP-5",
-  "title": "Type Safety & Import Aliases",
-  "passes": false,
-  "notes": ""
-
-New string:
-  "id": "STEP-5",
-  "title": "Type Safety & Import Aliases",
-  "passes": true,
-  "notes": "Verified all imports use @ aliases. Eliminated 15 'any' types. Configured ESLint boundaries plugin. All code passes typecheck."
-```
-
-### Update Progress File
-
-1. Use **Read tool** to read the progress file (e.g., `docs/progress-task-priority.txt`)
-2. Use **Edit tool** to append your progress report
-
-**Progress entry format:**
-```markdown
-## [YYYY-MM-DD HH:MM] - STEP-X: [Step Name]
-
-**What was implemented:**
-- [Details of implementation]
-
-**Files changed:**
-- [List of files]
-
-**MCP Tools Used:**
-- Supabase MCP: [what was done]
-- Chrome DevTools: [testing performed]
-- web-search-prime: [research topics]
-
-**Learnings:**
-- [Patterns discovered]
-- [Gotchas encountered]
-
----
-```
 
 ---
 
