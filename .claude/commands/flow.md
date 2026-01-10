@@ -22,12 +22,20 @@ Autonomous AI development flow that implements PRD stories using the Maven 10-St
 ```
 /flow start [max-iterations]
 ```
-- Scans `docs/` for all `prd-*.json` files
-- Finds the first PRD with incomplete stories (`passes: false`)
-- Creates/verifies feature branch from that PRD's `branchName`
-- Begins autonomous iteration loop on that PRD
-- When PRD is complete, moves to the next incomplete PRD
-- Default: 10 iterations
+
+**CRITICAL: This command runs AUTOMATICALLY until ALL stories complete**
+
+When you execute `/flow start` or `/flow continue`:
+
+1. Scan for incomplete PRDs
+2. Spawn flow-iteration agent for the first incomplete story
+3. **Wait for agent output:**
+   - If `ITERATION_COMPLETE`: Spawn NEW flow-iteration agent for next story
+   - If `PRD_COMPLETE`: Move to next incomplete PRD or stop
+   - If ERROR: Log error, skip to next story, continue
+4. **Repeat automatically** until ALL PRDs have ALL stories passing
+5. Do NOT wait for user input between stories
+6. Do NOT stop after one story - keep going until ALL are complete
 
 **Example:**
 ```
@@ -38,9 +46,12 @@ Autonomous AI development flow that implements PRD stories using the Maven 10-St
 1. Scans for all `docs/prd-*.json` files
 2. For each PRD, checks if all stories have `passes: true`
 3. Finds the first PRD with incomplete stories
-4. Processes that PRD until all stories pass
+4. **AUTOMATICALLY processes that PRD's stories one by one:**
+   - Spawn flow-iteration agent → story completes → spawn NEXT flow-iteration agent
+   - Continue until ALL stories in PRD have `passes: true`
 5. Automatically moves to the next incomplete PRD
 6. Continues until all PRDs are complete
+7. Default: 10 iterations (stories) unless specified
 
 ### Check status
 ```

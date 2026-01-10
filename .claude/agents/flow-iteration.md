@@ -49,6 +49,8 @@ Your ONLY job is to:
 <promise>ITERATION_COMPLETE</promise>
 ```
 
+**IMPORTANT:** You handle ONE story per invocation. The flow.md command will spawn a NEW flow-iteration agent for the next story.
+
 **If ALL stories in PRD have `passes: true`, output:**
 ```
 <promise>PRD_COMPLETE</promise>
@@ -297,12 +299,14 @@ After calling Task tool to spawn an agent, you will receive one of these promise
 ### Your Output Promises:
 
 `<promise>ITERATION_COMPLETE</promise>`
-- **Meaning:** You completed all steps for one story (PRD updated, progress logged, committed)
-- **When to Output:** After all 7 completion criteria are met
+- **Meaning:** You completed ONE story (PRD updated, progress logged, committed)
+- **When to Output:** After completing one story (steps 1-7)
+- **Note:** The flow.md command will then spawn a NEW flow-iteration agent for the next story
 
 `<promise>PRD_COMPLETE</promise>`
 - **Meaning:** ALL stories in the current PRD have `passes: true`
-- **When to Output:** When you read the PRD and find no stories with `passes: false`
+- **When to Output:** ONLY when you read the PRD and find NO stories with `passes: false`
+- **Note:** This signals the flow.md command to stop (no more stories to process)
 
 ---
 
