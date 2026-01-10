@@ -306,6 +306,78 @@ After calling Task tool to spawn an agent, you will receive one of these promise
 
 ---
 
+## Error Handling
+
+### When a Specialist Agent Fails
+
+If the Task tool returns an error instead of the expected promise output:
+
+1. **Read the error message carefully**
+   - Check if it's a syntax error, type error, or logic error
+   - Check if it's related to missing dependencies or files
+
+2. **Determine if the error is recoverable**
+   - **Recoverable errors:** Syntax errors, type errors, import issues
+   - **Unrecoverable errors:** Architecture violations, missing PRD, conflicting requirements
+
+3. **For recoverable errors:**
+   - Retry the agent with specific fix instructions
+   - Example: `Task(subagent_type="development", prompt="Fix the type error on line 45...")`
+   - Wait for completion and check result
+
+4. **For unrecoverable errors or if retry fails:**
+   - **Do NOT commit changes**
+   - **Do NOT update PRD**
+   - **Do NOT update progress file**
+   - Notify the user with:
+     - Story ID and title
+     - Error message
+     - Suggested next steps
+
+5. **Example error notification:**
+   ```
+   ❌ FAILED: US-ADMIN-012 - Platform revenue analytics
+
+   Error: Type 'any' is not allowed in RevenueAnalytics.tsx line 45
+
+   Suggested next steps:
+   - Fix the type annotation
+   - Re-run quality checks
+   - Use /flow continue to resume
+   ```
+
+### When prd-update Agent Fails
+
+PRD updates are critical for progress tracking. If prd-update fails:
+
+1. **Retry up to 3 times** with 1-second delay between retries
+2. **Check for file locks** - Another process might be editing the PRD
+3. **Verify file permissions** - Ensure write access to docs/ directory
+4. **If all retries fail:**
+   - **Do NOT output ITERATION_COMPLETE**
+   - Notify user with error details
+   - Suggest manual PRD update or retry
+
+### When Quality Checks Fail
+
+If typecheck, lint, or tests fail after agent completion:
+
+1. **Check which tests failed**
+   - Typecheck errors: Fix types and re-run
+   - Lint errors: Fix lint issues and re-run
+   - Test failures: Fix implementation or tests
+
+2. **Do NOT commit** until all quality checks pass
+
+3. **Do NOT update PRD** until all quality checks pass
+
+4. **If quality agent outputs BLOCK_COMMIT or SECURITY_BLOCK:**
+   - These are critical issues that MUST be fixed
+   - Do NOT proceed to next step
+   - Fix issues or notify user
+
+---
+
 ## Stop Condition
 
 If ALL stories in the current PRD have `passes: true`, output:

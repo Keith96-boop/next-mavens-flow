@@ -635,8 +635,6 @@ None
 - [ ] **Tested in Chrome DevTools** (for web apps)
 - [ ] **Used Supabase MCP** for database operations (if applicable)
 - [ ] **Used web-search-prime/web-reader** when uncertain
-- [ ] **Updated PRD JSON:** Set `passes: true` and added notes
-- [ ] **Updated progress file:** Appended progress report
 
 ---
 
