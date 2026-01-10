@@ -25,17 +25,21 @@ Autonomous AI development flow that implements PRD stories using the Maven 10-St
 
 **CRITICAL: This command runs AUTOMATICALLY until ALL stories complete**
 
+**Architecture:** The `/flow` command (running in main Claude context) coordinates ALL specialist agent spawning directly. Subagents are NOT used for coordination since they cannot spawn other subagents.
+
 When you execute `/flow start` or `/flow continue`:
 
 1. Scan for incomplete PRDs
-2. Spawn flow-iteration agent for the first incomplete story
-3. **Wait for agent output:**
-   - If `ITERATION_COMPLETE`: Spawn NEW flow-iteration agent for next story
-   - If `PRD_COMPLETE`: Move to next incomplete PRD or stop
-   - If ERROR: Log error, skip to next story, continue
-4. **Repeat automatically** until ALL PRDs have ALL stories passing
-5. Do NOT wait for user input between stories
-6. Do NOT stop after one story - keep going until ALL are complete
+2. Pick the first incomplete story
+3. **Spawn specialist agents directly using Task tool:**
+   - For each mavenStep in the story, spawn appropriate agent
+   - Wait for agent to complete before spawning next
+   - Continue until all mavenSteps are done
+4. Run quality checks, commit, update PRD
+5. **Repeat automatically** for next story
+6. Continue until ALL PRDs have ALL stories passing
+7. Do NOT wait for user input between stories
+8. Do NOT stop after one story - keep going until ALL are complete
 
 **Example:**
 ```
@@ -46,12 +50,22 @@ When you execute `/flow start` or `/flow continue`:
 1. Scans for all `docs/prd-*.json` files
 2. For each PRD, checks if all stories have `passes: true`
 3. Finds the first PRD with incomplete stories
-4. **AUTOMATICALLY processes that PRD's stories one by one:**
-   - Spawn flow-iteration agent → story completes → spawn NEXT flow-iteration agent
-   - Continue until ALL stories in PRD have `passes: true`
-5. Automatically moves to the next incomplete PRD
-6. Continues until all PRDs are complete
-7. Default: 10 iterations (stories) unless specified
+4. For each incomplete story (in priority order):
+   - Read story's mavenSteps array
+   - **Spawn specialist agents directly:**
+     - Step 1, 2, 7, 9 → Task(subagent_type="development")
+     - Step 3, 4, 6 → Task(subagent_type="refactor")
+     - Step 5 → Task(subagent_type="quality")
+     - Step 8, 10 → Task(subagent_type="security")
+   - Wait for each agent to complete
+   - Run quality checks (typecheck, lint)
+   - Commit changes
+   - Update PRD (set passes: true)
+   - Append to progress file
+5. Move to next incomplete story
+6. When PRD complete, move to next incomplete PRD
+7. Continue until all PRDs are complete
+8. Default: 10 iterations (stories) unless specified
 
 ### Check status
 ```
@@ -172,86 +186,91 @@ When you run `/flow start`:
    - Loads JSON and checks if all stories have `passes: true`
    - Identifies PRDs with incomplete stories (`passes: false`)
 3. **Selection Phase:** Picks the first incomplete PRD (alphabetically by filename)
-4. **Iteration Phase:** Processes that PRD's stories:
-   - Spawns fresh `flow-iteration` subagent (🟡 Yellow)
-   - Reads that PRD's JSON and progress file
-   - Picks highest priority story where `passes: false`
-   - Coordinates Maven agents based on story requirements
-   - Commits changes, updates PRD to `passes: true`
+4. **Iteration Phase:** Processes that PRD's stories one by one:
+   - Reads PRD JSON and picks highest priority story where `passes: false`
+   - Reads story's `mavenSteps` array
+   - **Spawns specialist agents directly** (one per mavenStep)
+   - Waits for each agent to complete
+   - Runs quality checks
+   - Commits changes
+   - Updates PRD to `passes: true`
    - Appends learnings to progress file
 5. **Completion Phase:** When PRD is complete (all `passes: true`):
    - Marks PRD as complete
    - Moves to next incomplete PRD
    - Repeats iteration phase
 6. **Final Phase:** When all PRDs are complete:
-   - Outputs: `<promise>ALL_FLOWS_COMPLETE</promise>`
+   - Outputs completion summary
 
-### Each Iteration
+### Maven Step to Agent Mapping
 
-1. Spawns a fresh `flow-iteration` subagent (🟡 Yellow) with clean context
-2. Subagent reads the current PRD's JSON and progress file
-3. Picks highest priority story where `passes: false`
-4. Analyzes story to determine required Maven steps
-5. Coordinates Maven agents based on story requirements:
-   - **development-agent** (🟢) for foundation, pnpm, data layer, MCP
-   - **refactor-agent** (🔵) for feature structure, modularization, UI
-   - **quality-agent** (🟣) for type safety and import validation
-   - **security-agent** (🔴) for auth flow and security audit
-6. Runs quality checks (typecheck, lint, tests)
-7. Updates `AGENTS.md` if patterns discovered
-8. Commits changes if quality checks pass
-9. Updates the PRD's JSON to set `passes: true`
-10. Appends learnings to that PRD's progress file
+The `/flow` command maps each step in the story's `mavenSteps` array to the appropriate specialist agent:
 
----
+| Maven Step | Agent Type | Task subagent_type | Description |
+|------------|------------|-------------------|-------------|
+| 1 | Foundation | development | Import UI with mock data or create from scratch |
+| 2 | Package Manager | development | Convert npm → pnpm |
+| 3 | Feature Structure | refactor | Restructure to feature-based folder structure |
+| 4 | Modularization | refactor | Modularize components >300 lines |
+| 5 | Type Safety | quality | Type safety - no 'any' types, @ aliases |
+| 6 | UI Centralization | refactor | Centralize UI components to @shared/ui |
+| 7 | Data Layer | development | Centralized data layer with backend setup |
+| 8 | Auth Integration | security | Firebase + Supabase authentication flow |
+| 9 | MCP Integration | development | MCP integrations (web-search, web-reader, chrome, expo, supabase) |
+| 10 | Security & Error Handling | security | Security and error handling |
 
-## CRITICAL: Prompt Template for flow-iteration Agent
+### Story Processing Flow
 
-**When spawning flow-iteration, use ONLY this minimal prompt template:**
+For each incomplete story:
 
+```markdown
+## Story: [Story ID] - [Story Title]
+
+**From PRD:**
+- mavenSteps: [1, 3, 5, 7]
+- Description: [Story description]
+- Acceptance Criteria: [List from PRD]
+
+**Processing:**
+
+1. [Step 1 - Foundation]
+   Spawning development agent...
+   → [Waiting for completion]
+   → [Agent completed successfully]
+
+2. [Step 3 - Feature Structure]
+   Spawning refactor agent...
+   → [Waiting for completion]
+   → [Agent completed successfully]
+
+3. [Step 5 - Type Safety]
+   Spawning quality agent...
+   → [Waiting for completion]
+   → [Agent completed successfully]
+
+4. [Step 7 - Data Layer]
+   Spawning development agent...
+   → [Waiting for completion]
+   → [Agent completed successfully]
+
+5. Running quality checks...
+   pnpm run typecheck
+   → Passed
+
+6. Committing changes...
+   git commit -m "feat: [Story ID] - [Story Title]"
+   → Committed
+
+7. Updating PRD...
+   Setting passes: true for [Story ID]
+   → Updated
+
+8. Logging progress...
+   Appending to docs/progress-[feature].txt
+   → Logged
+
+✅ Story [Story ID] complete
 ```
-You are the Maven Flow coordinator. Your job is to continue the Maven Flow workflow.
-
-Current Context:
-- Working directory: [current directory]
-- Current git branch: [branch name]
-- PRD file: docs/prd-[feature-name].json
-- Progress file: docs/progress-[feature-name].txt
-
-Your Tasks:
-1. Read the PRD file
-2. Read the progress file
-3. Find the first story with passes: false (highest priority)
-4. For that story, read the mavenSteps array
-5. Use the Task tool to spawn specialist agents for EACH mavenStep:
-   - Step 1, 2, 7, 9 → Task(subagent_type="development", prompt="...")
-   - Step 3, 4, 6 → Task(subagent_type="refactor", prompt="...")
-   - Step 5 → Task(subagent_type="quality", prompt="...")
-   - Step 8, 10 → Task(subagent_type="security", prompt="...")
-6. Wait for each agent to complete before starting the next
-7. Run quality checks (typecheck, lint)
-8. Commit changes
-9. Update PRD JSON via Task(subagent_type="prd-update", prompt="...")
-10. Append to progress file via Task(subagent_type="prd-update", prompt="...")
-
-IMPORTANT:
-- You are a COORDINATOR only
-- Use Task tool to spawn specialist agents for ALL implementation
-- NEVER implement code directly
-- You CANNOT edit files directly (no Write/Edit tools)
-- Use prd-update agent for PRD/progress file updates
-```
-
-**DO NOT include:**
-- Detailed implementation instructions
-- Step-by-step coding tasks
-- File paths or specific implementation details
-- "Implement X feature" instructions
-
-**The flow-iteration agent will figure out what to do based on:**
-1. The PRD story's acceptance criteria
-2. The mavenSteps array in the story
-3. Its own agent definition (flow-iteration.md)
 
 ## Feature-Based Architecture
 
@@ -283,7 +302,7 @@ src/
 - **Dependencies:** Order stories by dependency (schema → backend → UI)
 - **Quality hooks:** Automatically configured in `maven-flow/.claude/settings.json`
 - **Browser verification:** UI stories should include browser testing steps
-- **Agent coordination:** The flow-iteration agent automatically delegates to appropriate Maven agents
+- **Agent coordination:** The /flow command directly spawns specialist agents for each mavenStep
 
 ## Troubleshooting
 
