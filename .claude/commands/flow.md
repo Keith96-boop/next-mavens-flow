@@ -53,10 +53,10 @@ When you execute `/flow start` or `/flow continue`:
 4. For each incomplete story (in priority order):
    - Read story's mavenSteps array
    - **Spawn specialist agents directly:**
-     - Step 1, 2, 7, 9 → Task(subagent_type="development")
-     - Step 3, 4, 6 → Task(subagent_type="refactor")
-     - Step 5 → Task(subagent_type="quality")
-     - Step 8, 10 → Task(subagent_type="security")
+     - Step 1, 2, 7, 9 → Task(subagent_type="development-agent")
+     - Step 3, 4, 6 → Task(subagent_type="refactor-agent")
+     - Step 5 → Task(subagent_type="quality-agent")
+     - Step 8, 10 → Task(subagent_type="security-agent")
    - Wait for each agent to complete
    - Run quality checks (typecheck, lint)
    - Commit changes
@@ -208,16 +208,16 @@ The `/flow` command maps each step in the story's `mavenSteps` array to the appr
 
 | Maven Step | Agent Type | Task subagent_type | Description |
 |------------|------------|-------------------|-------------|
-| 1 | Foundation | development | Import UI with mock data or create from scratch |
-| 2 | Package Manager | development | Convert npm → pnpm |
-| 3 | Feature Structure | refactor | Restructure to feature-based folder structure |
-| 4 | Modularization | refactor | Modularize components >300 lines |
-| 5 | Type Safety | quality | Type safety - no 'any' types, @ aliases |
-| 6 | UI Centralization | refactor | Centralize UI components to @shared/ui |
-| 7 | Data Layer | development | Centralized data layer with backend setup |
-| 8 | Auth Integration | security | Firebase + Supabase authentication flow |
-| 9 | MCP Integration | development | MCP integrations (web-search, web-reader, chrome, expo, supabase) |
-| 10 | Security & Error Handling | security | Security and error handling |
+| 1 | Foundation | development-agent | Import UI with mock data or create from scratch |
+| 2 | Package Manager | development-agent | Convert npm → pnpm |
+| 3 | Feature Structure | refactor-agent | Restructure to feature-based folder structure |
+| 4 | Modularization | refactor-agent | Modularize components >300 lines |
+| 5 | Type Safety | quality-agent | Type safety - no 'any' types, @ aliases |
+| 6 | UI Centralization | refactor-agent | Centralize UI components to @shared/ui |
+| 7 | Data Layer | development-agent | Centralized data layer with backend setup |
+| 8 | Auth Integration | security-agent | Firebase + Supabase authentication flow |
+| 9 | MCP Integration | development-agent | MCP integrations (web-search, web-reader, chrome, expo, supabase) |
+| 10 | Security & Error Handling | security-agent | Security and error handling |
 
 ### Story Processing Flow
 

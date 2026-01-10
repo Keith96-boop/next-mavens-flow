@@ -1,15 +1,31 @@
 #!/usr/bin/env node
 /**
- * Pre-Task Hook: Validates PRD files exist before spawning flow-iteration agent
+ * Pre-Task Hook: Validates PRD files exist before spawning Maven Flow specialist agents
  *
- * This hook runs before any Task tool call. It only validates when:
- * - subagent_type is "flow-iteration"
+ * This hook runs before Task tool calls to Maven Flow specialist agents.
+ * It validates when spawning:
+ * - development-agent
+ * - refactor-agent
+ * - quality-agent
+ * - security-agent
+ * - prd-update (requires PRD files exist)
  *
  * Usage: Called by Claude Code via PreToolUse hook in flow.md
  */
 
 const fs = require('fs');
 const path = require('path');
+
+// Maven Flow specialist agent types that require PRD validation
+const MAVEN_FLOW_AGENTS = [
+  'development-agent',
+  'refactor-agent',
+  'quality-agent',
+  'security-agent',
+  'prd-update',
+  // Legacy name for backward compatibility
+  'flow-iteration'
+];
 
 function main() {
   try {
@@ -24,8 +40,8 @@ function main() {
       process.exit(0);
     }
 
-    // Only validate flow-iteration spawns
-    if (input.subagent_type !== 'flow-iteration') {
+    // Only validate Maven Flow agent spawns
+    if (!input.subagent_type || !MAVEN_FLOW_AGENTS.includes(input.subagent_type)) {
       process.exit(0);
     }
 

@@ -42,10 +42,10 @@ Main Claude
   ↓
 /flow (command) ← ALL coordination happens here
   ↓
-  ├─→ Task tool → development (for Step 1)
-  ├─→ Task tool → refactor (for Step 3)
-  ├─→ Task tool → quality (for Step 5)
-  ├─→ Task tool → security (for Step 8)
+  ├─→ Task tool → development-agent (for Step 1)
+  ├─→ Task tool → refactor-agent (for Step 3)
+  ├─→ Task tool → quality-agent (for Step 5)
+  ├─→ Task tool → security-agent (for Step 8)
   ↓
   After all specialists complete, continue to next story
 ```
@@ -58,10 +58,10 @@ The `/flow` command now:
 1. Scans for incomplete PRDs
 2. For each incomplete story, reads the `mavenSteps` array
 3. **Directly spawns specialist agents** using the Task tool:
-   - Step 1, 2, 7, 9 → `Task(subagent_type="development")`
-   - Step 3, 4, 6 → `Task(subagent_type="refactor")`
-   - Step 5 → `Task(subagent_type="quality")`
-   - Step 8, 10 → `Task(subagent_type="security")`
+   - Step 1, 2, 7, 9 → `Task(subagent_type="development-agent")`
+   - Step 3, 4, 6 → `Task(subagent_type="refactor-agent")`
+   - Step 5 → `Task(subagent_type="quality-agent")`
+   - Step 8, 10 → `Task(subagent_type="security-agent")`
 4. Waits for each agent to complete
 5. Runs quality checks, commits, updates PRD
 6. Continues to next story automatically

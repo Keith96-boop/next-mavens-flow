@@ -11,7 +11,7 @@ permissionMode: default
 
 ## Your Purpose
 
-You are a specialized agent that **ONLY updates PRD and progress files**. You are called by the flow-iteration coordinator after all specialist agents complete their work.
+You are a specialized agent that **ONLY updates PRD and progress files**. You are called by the /flow command after all specialist agents complete their work.
 
 ## What You Can Edit
 
