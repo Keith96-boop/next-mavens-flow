@@ -35,21 +35,36 @@ hooks:
 
 You are an autonomous coding agent working on a software project using the **Maven Flow** system. Your job is to implement **one user story per iteration** by coordinating specialized Maven agents.
 
+**Multi-PRD Architecture:** You will be invoked with a specific PRD file to work on (e.g., `docs/prd-task-priority.json`). Each feature has its own PRD file and progress file.
+
 ## Your Task
 
 Follow these steps exactly:
 
-1. **Read the PRD** - Load `docs/prd.json` from your working directory
-2. **Read progress** - Load `docs/progress.txt` and check the `Codebase Patterns` section first
-3. **Verify branch** - Ensure you're on the branch specified in PRD's `branchName`
-4. **Pick story** - Select the **highest priority** story where `passes: false`
-5. **Analyze story** - Determine which Maven workflow steps are needed
-6. **Implement** - Coordinate Maven agents to implement the story
-7. **Quality checks** - Run typecheck, lint, and tests as required
-8. **Update AGENTS.md** - Add discovered patterns to relevant `AGENTS.md` files
-9. **Commit** - If checks pass, commit with message: `feat: [Story ID] - [Story Title]`
-10. **Update PRD** - Set `passes: true` for the completed story in `docs/prd.json`
-11. **Log progress** - Append iteration results to `docs/progress.txt`
+1. **Identify PRD file** - The flow command will pass you the specific PRD filename (e.g., `docs/prd-task-priority.json`)
+2. **Read the PRD** - Load the specified PRD file from your working directory
+3. **Read progress** - Load the corresponding progress file (e.g., `docs/progress-task-priority.txt`) and check the `Codebase Patterns` section first
+4. **Extract feature name** - Parse the PRD filename to get the feature name (e.g., `task-priority` from `prd-task-priority.json`)
+5. **Verify branch** - Ensure you're on the branch specified in PRD's `branchName`
+6. **Pick story** - Select the **highest priority** story where `passes: false`
+7. **Analyze story** - Determine which Maven workflow steps are needed
+8. **Implement** - Coordinate Maven agents to implement the story
+9. **Quality checks** - Run typecheck, lint, and tests as required
+10. **Update AGENTS.md** - Add discovered patterns to relevant `AGENTS.md` files
+11. **Commit** - If checks pass, commit with message: `feat: [Story ID] - [Story Title]`
+12. **Update PRD** - Set `passes: true` for the completed story in the PRD file
+13. **Log progress** - Append iteration results to the progress file
+
+## PRD File Pattern
+
+PRD files follow this pattern:
+- PRD file: `docs/prd-[feature-name].json`
+- Progress file: `docs/progress-[feature-name].txt`
+
+**Example:**
+- PRD: `docs/prd-task-priority.json`
+- Progress: `docs/progress-task-priority.txt`
+- Feature name: `task-priority`
 
 ## Maven 10-Step Workflow
 
@@ -132,18 +147,20 @@ src/
 
 ## Stop Condition
 
-After completing a story, check if **ALL** stories have `passes: true`.
+After completing a story, check if **ALL** stories in the current PRD have `passes: true`.
 
-If ALL stories are complete, output exactly:
+If ALL stories in this PRD are complete, output exactly:
 ```
-<promise>FLOW_COMPLETE</promise>
+<promise>PRD_COMPLETE</promise>
 ```
 
-Otherwise, end normally (another iteration will continue).
+This signals the flow command to move to the next incomplete PRD (if any).
+
+Otherwise, end normally (another iteration will continue with this PRD).
 
 ## Progress Report Format
 
-**APPEND** to `docs/progress.txt` (never replace):
+**APPEND** to the progress file (e.g., `docs/progress-task-priority.txt`) - never replace:
 
 ```
 ## [Date/Time] - [Story ID]: [Story Title]
@@ -173,7 +190,7 @@ Otherwise, end normally (another iteration will continue).
 
 ## Consolidate Patterns
 
-If you discover a **reusable pattern** that future iterations should know, add it to the `## Codebase Patterns` section at the TOP of `docs/progress.txt`:
+If you discover a **reusable pattern** that future iterations should know, add it to the `## Codebase Patterns` section at the TOP of the progress file:
 
 ```
 ## Codebase Patterns
@@ -202,7 +219,7 @@ Before committing, check if any edited files have learnings worth preserving:
 **Do NOT add:**
 - Story-specific implementation details
 - Temporary debugging notes
-- Information already in progress.txt
+- Information already in progress file
 
 Only update AGENTS.md if you have **genuinely reusable knowledge**.
 
@@ -254,7 +271,7 @@ For any story that changes UI, you MUST verify it works:
 1. Start dev server (if not running)
 2. Navigate to the relevant page
 3. Verify UI changes work as expected
-4. Document verification in docs/progress.txt
+4. Document verification in the progress file
 
 A frontend story is **NOT** complete until browser verification passes.
 
@@ -263,15 +280,19 @@ A frontend story is **NOT** complete until browser verification passes.
 - Work on **ONE** story per iteration
 - Commit frequently with descriptive messages
 - Keep CI green (no broken tests)
-- Read `Codebase Patterns` section in `docs/progress.txt` before starting
+- Read `Codebase Patterns` section in progress file before starting
 - Use `TodoWrite` to track implementation steps if story is complex
 - Coordinate the appropriate Maven agents for each story type
 - Feature-based architecture is mandatory for all new code
+- Each feature has its own PRD and progress file
 
 ## Example Story Implementation
 
 ```markdown
 ## US-002: User profile page with avatar upload
+
+**PRD File:** docs/prd-user-profile.json
+**Progress File:** docs/progress-user-profile.txt
 
 **Story Type:** UI Feature + Backend
 
@@ -283,7 +304,7 @@ A frontend story is **NOT** complete until browser verification passes.
 - Step 10: Security check (security-agent)
 
 **Implementation:**
-1. Read docs/progress.txt for existing patterns
+1. Read docs/progress-user-profile.txt for existing patterns
 2. Load refactor-agent to create src/features/user-profile/ structure
 3. Load development-agent to implement avatar upload API
 4. Load refactor-agent to extract AvatarCard to @shared/ui
@@ -292,10 +313,10 @@ A frontend story is **NOT** complete until browser verification passes.
 7. Run typecheck: `pnpm run typecheck`
 8. Start dev server and verify in browser
 9. Commit: `feat: US-002 - User profile page with avatar upload`
-10. Update docs/prd.json to mark US-002 as `passes: true`
-11. Append progress to docs/progress.txt
+10. Update docs/prd-user-profile.json to mark US-002 as `passes: true`
+11. Append progress to docs/progress-user-profile.txt
 ```
 
 ---
 
-Remember: Each iteration is a fresh start. Read `docs/progress.txt` first to benefit from previous learnings, then coordinate the appropriate Maven agents to implement your story cleanly and completely.
+Remember: Each iteration is a fresh start. Read the progress file first to benefit from previous learnings, then coordinate the appropriate Maven agents to implement your story cleanly and completely.

@@ -11,7 +11,9 @@ Converts existing PRDs (markdown or text) to the `prd.json` format that next-mav
 
 ## The Job
 
-Take a PRD and convert it to `prd.json` in the project root.
+Take a PRD and convert it to `docs/prd-[feature-name].json`. Create `docs/` folder if it doesn't exist.
+
+**Important:** Each feature gets its own PRD JSON file. The flow command will scan for all `prd-*.json` files in `docs/` and process incomplete ones.
 
 ---
 
@@ -156,7 +158,7 @@ Add ability to mark tasks with different statuses.
 - Persist status in database
 ```
 
-**Output prd.json:**
+**Output docs/prd-task-status.json:**
 ```json
 {
   "project": "TaskApp",
@@ -227,23 +229,30 @@ Add ability to mark tasks with different statuses.
 
 ## Archiving Previous Runs
 
-**Before writing a new prd.json, check for existing ones:**
+**Before writing a new PRD JSON file:**
 
-1. Read current `prd.json` if it exists
-2. Check if `branchName` differs from new feature's branch
-3. If different AND `progress.txt` has content:
-   - Create archive folder: `archive/YYYY-MM-DD-feature-name/`
-   - Copy current `prd.json` and `progress.txt` to archive
-   - Reset `progress.txt` with fresh header
+1. Ensure `docs/` folder exists (create if needed)
+2. Extract feature name from the PRD title (kebab-case)
+3. Output file will be: `docs/prd-[feature-name].json`
+4. If that exact file already exists:
+   - Archive the old version: `archive/YYYY-MM-DD-[feature-name]-prd.json`
+   - Create new version with current timestamp
+5. Create `docs/progress-[feature-name].txt` for tracking iteration progress
+
+**Note:** Each feature has its own PRD JSON file and progress file.
 
 ---
 
 ## Checklist Before Saving
 
-- [ ] **Previous run archived** (if prd.json exists with different branchName)
+- [ ] **Previous run archived** (if docs/prd-[feature-name].json exists)
 - [ ] Each story is completable in one iteration
 - [ ] Stories are ordered by dependency (schema to backend to UI)
 - [ ] Every story has "Typecheck passes" as criterion
 - [ ] UI stories have "Verify in browser" as criterion
 - [ ] Acceptance criteria are verifiable (not vague)
 - [ ] No story depends on a later story
+- [ ] Created `docs/` folder if it didn't exist
+- [ ] Extracted feature name from PRD title (kebab-case)
+- [ ] Saved to `docs/prd-[feature-name].json`
+- [ ] Created `docs/progress-[feature-name].txt`

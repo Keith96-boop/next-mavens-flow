@@ -14,7 +14,8 @@ Create detailed Product Requirements Documents optimized for the next-mavens-flo
 1. Receive a feature description from the user
 2. Ask 3-5 essential clarifying questions (with lettered options)
 3. Generate a structured PRD based on answers
-4. Save to `tasks/prd-[feature-name].md`
+4. Create `docs/` folder if it doesn't exist
+5. Save to `docs/prd-[feature-name].md`
 
 **Important:** Do NOT start implementing. Just create the PRD.
 
@@ -178,7 +179,7 @@ For stories with testable logic, also include:
 ## Output
 
 - **Format:** Markdown (`.md`)
-- **Location:** `tasks/`
+- **Location:** `docs/` (created automatically if doesn't exist)
 - **Filename:** `prd-[feature-name].md` (kebab-case)
 
 ---
@@ -275,4 +276,5 @@ Before saving the PRD:
 - [ ] Stories are ordered by dependency
 - [ ] Functional requirements are numbered and unambiguous
 - [ ] Non-goals section defines clear boundaries
-- [ ] Saved to `tasks/prd-[feature-name].md`
+- [ ] Created `docs/` folder if it didn't exist
+- [ ] Saved to `docs/prd-[feature-name].md`

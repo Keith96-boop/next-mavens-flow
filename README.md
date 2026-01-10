@@ -4,28 +4,34 @@ Autonomous AI development system for Claude Code CLI that implements PRD stories
 
 ## Overview
 
-Maven Flow combines two powerful concepts:
+Maven Flow combines powerful concepts for autonomous development:
 
-1. **PRD-Driven Iteration** - Works through user stories one at a time with clean context
-2. **Maven 10-Step Workflow** - Comprehensive quality assurance via specialized agents
+1. **Multi-PRD Architecture** - Each feature has its own PRD file, processed independently
+2. **PRD-Driven Iteration** - Works through user stories one at a time with clean context
+3. **Maven 10-Step Workflow** - Comprehensive quality assurance via specialized agents
 
 Each story is implemented by coordinating the right agents for the job, ensuring code quality, architecture compliance, and security best practices.
 
 ## Quick Start
 
 ```bash
-# 1. Create a PRD (just describe what you want - skill invoked automatically)
+# 1. Create a PRD for a feature (skill invoked automatically)
 "Create a PRD for user authentication"
 
-# 2. Convert to JSON (skill invoked automatically)
-"Convert the PRD to docs/prd.json format"
+# 2. Convert to feature-specific JSON (skill invoked automatically)
+"Convert the PRD to docs/prd-user-auth.json"
 
 # 3. Start autonomous development
 /flow start
 
-# 4. Check progress
+# 4. Check progress across all features
 /flow status
 ```
+
+**Multi-PRD Workflow:**
+- Each feature gets its own `docs/prd-[feature-name].json` file
+- The flow scans for all PRD files and processes incomplete ones
+- Create multiple PRDs for different features, flow handles them in order
 
 ## Architecture
 
@@ -36,8 +42,20 @@ Each story is implemented by coordinating the right agents for the job, ensuring
                               │
                               ↓
 ┌─────────────────────────────────────────────────────────────┐
-│                   Load docs/prd.json                        │
-│                   Read docs/progress.txt                     │
+│              Scan docs/ for prd-*.json files                │
+│              Check each for incomplete stories              │
+└─────────────────────────────┬───────────────────────────────┘
+                              │
+                              ↓
+              ┌───────────────┴───────────────┐
+              │   Select first incomplete PRD  │
+              │   (e.g., prd-task-priority)    │
+              └───────────────┬───────────────┘
+                              │
+                              ↓
+┌─────────────────────────────────────────────────────────────┐
+│           Load docs/prd-task-priority.json                  │
+│           Read docs/progress-task-priority.txt              │
 └─────────────────────────────┬───────────────────────────────┘
                               │
                               ↓
@@ -86,20 +104,22 @@ Each story is implemented by coordinating the right agents for the job, ensuring
                               ↓
 ┌─────────────────────────────────────────────────────────────┐
 │              Commit: feat: [Story ID] - [Title]            │
-│              Update docs/prd.json: passes: true            │
-│              Append to docs/progress.txt                    │
+│    Update docs/prd-task-priority.json: passes: true        │
+│    Append to docs/progress-task-priority.txt               │
 └─────────────────────────────┬───────────────────────────────┘
                               │
                               ↓
                     ┌─────────────────┐
                     │   All stories   │
+                    │   in PRD        │
                     │   complete?     │
                     └────────┬────────┘
                              │
                     No ──────┴────── Yes
                      │                   │
                      │                   ↓
-                     │          <promise>FLOW_COMPLETE</promise>
+                     │          Move to next PRD
+                     │          (if any incomplete)
                      │
                      └── Next iteration
 ```
@@ -168,19 +188,22 @@ Begins autonomous iteration through PRD stories.
 ```
 
 **What happens:**
-1. Validates `docs/prd.json` exists
-2. Creates/verifies feature branch from PRD's `branchName`
-3. For each iteration:
+1. Scans `docs/` for all `prd-*.json` files
+2. Finds the first PRD with incomplete stories (`passes: false`)
+3. Creates/verifies feature branch from that PRD's `branchName`
+4. For each iteration:
    - Spawns fresh `flow-iteration` agent with clean context
    - Picks highest priority story where `passes: false`
    - Coordinates Maven agents to implement the story
    - Runs quality checks
    - Commits if checks pass
-   - Updates PRD and progress
+   - Updates that PRD and its progress file
+5. When PRD is complete, moves to next incomplete PRD
+6. Continues until all PRDs are complete
 
 ### `/flow status`
 
-Shows current progress and story completion status.
+Shows current progress and story completion status for all PRDs.
 
 ```bash
 /flow status
@@ -188,44 +211,42 @@ Shows current progress and story completion status.
 
 **Example output:**
 ```
-Maven Flow Status: 3 of 5 stories complete
+Maven Flow Status: 3 PRD files found
 
-Completed:
+prd-task-priority.json (3/5 complete)
   ✓ US-001: Add priority field to database
   ✓ US-002: Display priority indicator
   ✓ US-003: Add priority selector
-
-Remaining:
   ○ US-004: Filter tasks by priority (priority: 4)
   ○ US-005: Add priority sorting (priority: 5)
 
-Recent progress:
-  [2025-01-10] US-003 - Added priority dropdown
-  Agents: refactor-agent, quality-agent
-  Files: src/features/task/components/TaskCard.tsx
+prd-user-auth.json (0/4 complete)
+  ○ US-001: Firebase authentication setup
+  ○ US-002: Supabase profile storage
+  ○ US-003: Login form UI
+  ○ US-004: Password reset flow
+
+prd-notifications.json (4/4 complete) ✅
+
+Current focus: prd-task-priority.json
 ```
 
 ### `/flow continue [max-iterations]`
-
-Resumes from last iteration after interruption.
-
 ```bash
-/flow continue      # Continue with default iterations
-/flow continue 5    # Continue with custom iterations
+/flow continue              # Continue with current PRD
+/flow continue 5            # Continue with 5 more iterations
+/flow continue task-priority # Continue specific PRD
 ```
 
-### `/flow reset`
+Resumes from last iteration after interruption. Can specify which PRD to work on.
 
-Archives current run and starts fresh.
-
+### `/flow reset [prd-name]`
 ```bash
-/flow reset
+/flow reset              # Prompts to select PRD
+/flow reset task-priority  # Reset specific PRD
 ```
 
-**What happens:**
-1. Prompts for confirmation
-2. Archives to `archive/YYYY-MM-DD-feature-name/`
-3. Resets `docs/prd.json` and `docs/progress.txt`
+Archives current PRD run and starts fresh. Other PRDs remain unaffected.
 
 ### `/flow help`
 
@@ -233,11 +254,23 @@ Displays help information.
 
 ## Required Files
 
-| File | Purpose | Location |
-|------|---------|----------|
-| `prd.json` | PRD with stories, acceptance criteria, pass/fail | `docs/prd.json` |
-| `progress.txt` | Append-only log of learnings and context | `docs/progress.txt` |
+| File Pattern | Purpose | Location |
+|--------------|---------|----------|
+| `prd-[feature-name].json` | Feature PRD with stories, acceptance criteria, pass/fail | `docs/prd-[feature-name].json` |
+| `progress-[feature-name].txt` | Append-only log of learnings and context | `docs/progress-[feature-name].txt` |
 | `AGENTS.md` | Codebase patterns (auto-updated) | `[directory]/AGENTS.md` |
+
+## Multi-PRD File Structure
+
+```
+docs/
+├── prd-task-priority.json         # Task priority feature PRD
+├── prd-user-auth.json             # User authentication feature PRD
+├── prd-notifications.json         # Notifications feature PRD
+├── progress-task-priority.txt     # Task priority progress log
+├── progress-user-auth.txt         # User auth progress log
+└── progress-notifications.txt     # Notifications progress log
+```
 
 ## Skills
 
@@ -247,24 +280,28 @@ Displays help information.
 
 Describe your feature to create a PRD. The skill will ask clarifying questions and generate a structured document with user stories, acceptance criteria, and dependencies.
 
+**Output:** `docs/prd-[feature-name].md`
+
 **Example:**
 - "Create a PRD for user authentication"
 - "Write requirements for a task priority feature"
 
 ### PRD Conversion (flow-convert skill)
 
-Convert a PRD (markdown or existing format) to `docs/prd.json` format for Maven Flow autonomous execution.
+Convert a PRD (markdown or existing format) to `docs/prd-[feature-name].json` format for Maven Flow autonomous execution.
+
+**Output:** `docs/prd-[feature-name].json`
 
 **Example:**
-- "Convert this PRD to JSON format"
-- "Turn the PRD in tasks/ into prd.json"
+- "Convert the task priority PRD to JSON format"
 
-Creates `docs/prd.json` with structure:
+**Creates feature-specific JSON with structure:**
 ```json
 {
   "projectName": "My App",
-  "branchName": "feature/user-profile",
-  "stories": [
+  "branchName": "feature/task-priority",
+  "description": "Task priority feature",
+  "userStories": [
     {
       "id": "US-001",
       "title": "Story title",
@@ -348,65 +385,36 @@ Maven Flow implements a dual-provider authentication system:
 
 ## Installation
 
-### Quick Install (Recommended)
+### Quick Install (Simplified Scripts - Recommended)
 
-Use the installation script for automatic setup:
+Use the simplified installation scripts for easy setup:
 
-**Linux/macOS:**
+**Linux/macOS (Bash):**
 ```bash
-cd maven-flow
-chmod +x install.sh
+# Global installation (available for all projects) - default
+./install-simple.sh global
 
 # Local installation (for current project)
-./install.sh --local
-
-# Global installation (available for all projects)
-./install.sh --global
+./install-simple.sh local
 ```
 
-**Windows:**
-```batch
-cd maven-flow
-
-# Local installation (for current project)
-install.bat --local
-
+**Windows (PowerShell):**
+```powershell
 # Global installation
-install.bat --global
+.\install-simple.ps1 global
+
+# Local installation
+.\install-simple.ps1 local
 ```
 
-### Manual Installation
+**Windows (CMD):**
+```batch
+# Global installation
+install-simple.bat global
 
-1. **Copy Maven Flow agents, commands, and hooks to your project:**
-   ```bash
-   # Create directory structure
-   mkdir -p .claude/maven-flow/{agents,commands,hooks,config,.claude}
-   mkdir -p .claude/skills
-
-   # Copy components
-   cp -r maven-flow/agents/* .claude/maven-flow/agents/
-   cp -r maven-flow/commands/* .claude/maven-flow/commands/
-   cp -r maven-flow/hooks/* .claude/maven-flow/hooks/
-   cp -r maven-flow/config/* .claude/maven-flow/config/
-   cp -r maven-flow/.claude/settings.json .claude/maven-flow/.claude/
-
-   # Copy skills to .claude/skills/ (official location)
-   cp -r maven-flow/skills/* .claude/skills/
-   ```
-
-2. **Make hooks executable:**
-   ```bash
-   chmod +x .claude/maven-flow/hooks/*.sh
-   ```
-
-3. **Verify installation:**
-   ```bash
-   ls .claude/maven-flow/
-   # Should show: agents/, commands/, hooks/, config/, .claude/
-
-   ls .claude/skills/
-   # Should show: workflow/, flow-prd/, flow-convert/
-   ```
+# Local installation
+install-simple.bat local
+```
 
 ## Configuration
 
@@ -423,6 +431,13 @@ The hooks are configured in `.claude/maven-flow/.claude/settings.json`. Ensure t
 ### Story Size
 
 Keep stories small enough for one context window (~30-50 files max). Larger stories should be broken down.
+
+### Multiple Features
+
+Create separate PRDs for each feature. The flow will process them in order:
+1. Create PRD for feature A → Convert to `docs/prd-feature-a.json`
+2. Create PRD for feature B → Convert to `docs/prd-feature-b.json`
+3. Run `/flow start` → Processes feature A, then feature B
 
 ### Dependencies
 
@@ -441,23 +456,29 @@ UI stories require browser testing. The flow-iteration agent will:
 1. Start dev server
 2. Navigate to relevant page
 3. Verify changes work as expected
-4. Document verification in progress.txt
+4. Document verification in progress file
 
 ## Troubleshooting
 
 ### Flow not starting?
 
 **Check:**
-- `docs/prd.json` exists and is valid JSON
-- PRD's `branchName` matches your intended branch
+- At least one `docs/prd-*.json` file exists
+- PRD JSON is valid
 - Run `/flow status` for diagnostics
 
 ### Iteration failing?
 
 **Check:**
-- `docs/progress.txt` for error messages
+- That PRD's `docs/progress-[feature-name].txt` for error messages
 - Git log: `git log --oneline -10`
 - Resume with `/flow continue`
+
+### Wrong PRD being processed?
+
+**Check:**
+- Use `/flow status` to see all PRDs and their status
+- Use `/flow continue [prd-name]` to specify which PRD to work on
 
 ### Quality hooks not running?
 
@@ -466,13 +487,13 @@ UI stories require browser testing. The flow-iteration agent will:
 - Hooks are executable: `chmod +x .claude/maven-flow/hooks/*.sh`
 - Bash is available on your system
 
-### Need to start over?
+### Need to restart a PRD?
 
 ```bash
-/flow reset
+/flow reset [prd-name]
 ```
 
-Previous runs are preserved in `archive/YYYY-MM-DD-feature-name/`
+Previous runs are preserved in `archive/YYYY-MM-DD-[feature-name]/`. Other PRDs remain unaffected.
 
 ## File Structure
 
@@ -481,39 +502,36 @@ maven-flow/                              # Distribution directory
 ├── .claude/
 │   └── settings.json                   # Hook configurations
 ├── agents/
-│   ├── flow-iteration.md               # 🟡 Main coordinator
-│   ├── development.md                  # 🟢 Foundation, pnpm, data, MCP
-│   ├── refactor.md                     # 🔵 Structure, modularize, UI
-│   ├── quality.md                      # 🟣 Type safety, imports
-│   └── security.md                     # 🔴 Auth flow, security
+│   └── flow-iteration.md               # 🟡 Main coordinator
 ├── commands/
 │   └── flow.md                         # /flow slash command
 ├── skills/
-│   ├── workflow/SKILL.md               # Main workflow
-│   ├── flow-prd/SKILL.md               # PRD creation
-│   └── flow-convert/SKILL.md           # PRD conversion
+│   ├── flow-prd/SKILL.md               # PRD creation skill
+│   └── flow-convert/SKILL.md           # PRD conversion skill
 ├── hooks/
 │   ├── post-tool-use-quality.sh        # Real-time quality
 │   └── stop-comprehensive-check.sh    # Pre-completion check
 ├── config/
 │   └── eslint.config.mjs               # Feature boundaries
-├── install.sh                          # Installation script (Linux/macOS)
-├── install.bat                         # Installation script (Windows)
+├── install-simple.sh                   # ✅ Simplified installation (Linux/macOS)
+├── install-simple.ps1                  # ✅ Simplified installation (PowerShell)
+├── install-simple.bat                  # ✅ Simplified installation (Windows CMD)
 └── README.md                           # This file
 
 # After Installation
 
 .claude/
 ├── maven-flow/                         # Maven Flow system
-│   ├── agents/                         # Specialized agents
-│   ├── commands/                       # /flow command
 │   ├── hooks/                          # Quality enforcement hooks
 │   ├── config/                         # ESLint configuration
 │   └── .claude/settings.json           # Hook settings
-└── skills/                             # ✅ Skills in official location
-    ├── workflow/SKILL.md               # Main workflow skill
-    ├── flow-prd/SKILL.md               # PRD creation skill
-    └── flow-convert/SKILL.md           # PRD conversion skill
+├── skills/                             # ✅ Skills in official location
+│   ├── flow-prd/SKILL.md               # PRD creation skill
+│   └── flow-convert/SKILL.md           # PRD conversion skill
+├── agents/                             # ✅ Global agents location
+│   └── flow-iteration.md               # Main iteration agent
+└── commands/                           # ✅ Global commands location
+    └── flow.md                         # /flow command
 ```
 
 ## Agent Reference
@@ -573,40 +591,44 @@ maven-flow/                              # Distribution directory
 ## Example Workflow
 
 ```bash
-# 1. User wants to add user authentication
-User: "Add user login and registration with profile management"
+# 1. User wants multiple features
+User: "Add user login and task priority features"
 
-# 2. Create PRD
-/flow-prd
-→ Generates stories for auth flow, profile UI, password reset
+# 2. Create PRD for each feature
+User: "Create a PRD for user authentication"
+→ Generates docs/prd-user-auth.md
 
-# 3. Convert to JSON
-/flow-convert
-→ Creates docs/prd.json
+User: "Create a PRD for task priority"
+→ Generates docs/prd-task-priority.md
+
+# 3. Convert each PRD to JSON
+User: "Convert user auth PRD to JSON"
+→ Creates docs/prd-user-auth.json
+
+User: "Convert task priority PRD to JSON"
+→ Creates docs/prd-task-priority.json
 
 # 4. Start autonomous development
-/flow start
+User: /flow start
 
 # 5. Maven Flow automatically:
-Iteration 1: US-001 - Firebase authentication setup
-  → development-agent: Firebase SDK integration
-  → security-agent: Auth flow validation
-  → Commit: feat: US-001 - Firebase authentication setup
+# Scans for PRDs → Finds 2 incomplete PRDs
+# Selects prd-task-priority.json (alphabetically first)
 
-Iteration 2: US-002 - Supabase profile storage
-  → development-agent: Supabase client setup
-  → security-agent: Profile schema validation
-  → Commit: feat: US-002 - Supabase profile storage
+Iteration 1-5: prd-task-priority.json stories
+  → development-agent, refactor-agent, quality-agent
+  → Commits: feat: US-001 through US-005
+  → Updates docs/prd-task-priority.json: all passes: true
+  → PRD complete!
 
-Iteration 3: US-003 - Login form UI
-  → refactor-agent: Create features/auth/ structure
-  → refactor-agent: Extract LoginForm to @shared/ui
-  → quality-agent: Type safety check
-  → Browser verification
-  → Commit: feat: US-003 - Login form UI
+Iteration 6-9: prd-user-auth.json stories
+  → development-agent, security-agent, refactor-agent
+  → Commits: feat: US-001 through US-004
+  → Updates docs/prd-user-auth.json: all passes: true
+  → PRD complete!
 
-# 6. All stories complete
-<promise>FLOW_COMPLETE</promise>
+# 6. All PRDs complete
+<promise>ALL_FLOWS_COMPLETE</promise>
 ```
 
 ## Contributing
@@ -625,4 +647,4 @@ Maven Flow is part of the Ralph autonomous agent pattern implementation.
 
 ---
 
-**Maven Flow: Autonomous AI development with comprehensive quality assurance powered by Claude Code CLI**
+**Maven Flow: Autonomous AI development with multi-PRD support and comprehensive quality assurance powered by Claude Code CLI**
