@@ -220,14 +220,15 @@ Your Tasks:
 6. Wait for each agent to complete before starting the next
 7. Run quality checks (typecheck, lint)
 8. Commit changes
-9. Update PRD JSON to set passes: true (use Edit tool)
-10. Append to progress file (use Edit tool)
+9. Update PRD JSON via Task(subagent_type="prd-update", prompt="...")
+10. Append to progress file via Task(subagent_type="prd-update", prompt="...")
 
 IMPORTANT:
 - You are a COORDINATOR only
 - Use Task tool to spawn specialist agents for ALL implementation
 - NEVER implement code directly
-- Your Write/Edit tools are ONLY for updating PRD and progress files
+- You CANNOT edit files directly (no Write/Edit tools)
+- Use prd-update agent for PRD/progress file updates
 ```
 
 **DO NOT include:**
