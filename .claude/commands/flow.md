@@ -281,7 +281,9 @@ For each incomplete story:
    → Passed
 
 6. Committing changes...
-   git commit -m "feat: [Story ID] - [Story Title]"
+   git commit -m "feat: [Story ID] - [Story Title]
+
+Co-Authored-By: NEXT MAVENS <info@nextmavens.com>"
    → Committed
 
 7. Updating PRD...
