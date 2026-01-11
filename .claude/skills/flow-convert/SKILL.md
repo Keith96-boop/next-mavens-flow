@@ -31,24 +31,17 @@ When converting a PRD to JSON, the system MUST:
 **MCP Discovery Process:**
 
 ```bash
-# 1. Scan configured MCPs using bash
-# Get the settings file location (cross-platform)
-claude_settings_path="$HOME/.claude/settings.json"
-if [[ "$OSTYPE" == "msys" ]] || [[ "$OSTYPE" == "win32" ]]; then
-  claude_settings_path="$USERPROFILE/.claude/settings.json"
-fi
+# 1. List configured MCP servers using Claude CLI
+claude mcp list
 
-# Extract MCP server names from settings
-configured_mcps=$(cat "$claude_settings_path" 2>/dev/null | grep -o '"mcpServers"' -A 100 | grep -o '"[^"]*":' | grep -v "mcpServers" | tr -d '":')
+# 2. For each MCP server, get detailed information
+claude mcp get <server-name>
 
-# 2. For each MCP, identify its tools from the MCP tools available in current session
-# Use pattern matching on available tool names (tools are prefixed with mcp__)
-available_tools=$(claude -p "List all available MCP tools as JSON" --output-format json 2>/dev/null)
+# 3. Identify available tools from current session
+# Tools are visible to the AI session prefixed with mcp__
+# The AI can introspect available tools in its current context
 
-# OR: Read from current session context - tools with mcp__ prefix
-# This is done by checking what tools the AI actually has access to
-
-# 3. Pattern-match tools to Maven steps
+# 4. Pattern-match tools to Maven steps based on tool names
 # Database: supabase_*, postgres_*, mysql_*, mongo_* → Steps 7, 8, 10
 # Web search: web_search_*, search_* → All steps
 # Web reader: web_reader_*, fetch_* → All steps
@@ -56,13 +49,22 @@ available_tools=$(claude -p "List all available MCP tools as JSON" --output-form
 # Deployment: vercel_*, wrangler_*, cloudflare_* → Step 9
 # Design: figma_*, design_* → Step 11
 
-# 4. Include discovered tools in PRD JSON
+# 5. Include discovered tools in PRD JSON
 ```
 
-**IMPORTANT:** Since there's no `claude mcp list` command yet (GitHub issue #6574), discovery works by:
-1. Reading `~/.claude/settings.json` via bash to get configured MCP servers
-2. Pattern-matching available tools in the current session (tools prefixed with `mcp__`)
-3. Mapping tool names to Maven workflow steps based on naming patterns
+**MCP Discovery Commands:**
+
+| Command | Purpose |
+|---------|---------|
+| `claude mcp list` | List all configured MCP servers and their connection status |
+| `claude mcp get <name>` | Get detailed info about a specific MCP server |
+| `claude mcp add` | Add a new MCP server |
+| `claude mcp remove <name>` | Remove an MCP server |
+
+**Discovery approach:**
+1. Use `claude mcp list` to get all configured MCP servers
+2. For each connected MCP, identify its tools from the current session (tools with `mcp__` prefix)
+3. Map tool names to Maven workflow steps based on naming patterns
 
 ---
 
