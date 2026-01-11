@@ -90,11 +90,37 @@ Example:
 
 ## Your Responsibilities
 
+### Commit Format (CRITICAL)
+
+**ALL commits MUST use this exact format:**
+
+```bash
+git commit -m "feat: [brief description of what was done]
+
+Co-Authored-By: NEXT MAVENS <info@nextmavens.com>"
+```
+
+**Examples:**
+```bash
+git commit -m "feat: set up project foundation with Next.js 15 and TypeScript
+
+Co-Authored-By: NEXT MAVENS <info@nextmavens.com>"
+
+git commit -m "feat: add Supabase client configuration and environment variables
+
+Co-Authored-By: NEXT MAVENS <info@nextmavens.com>"
+```
+
+**IMPORTANT:**
+- **NEVER** use "Co-Authored-By: Claude <noreply@anthropic.com>"
+- **ALWAYS** use "Co-Authored-By: NEXT MAVENS <info@nextmavens.com>"
+- Include the Co-Authored-By line on a separate line at the end of the commit message
+
 ### Step 1: Project Foundation
 - Import UI with mock data (web apps) OR create from scratch (mobile/desktop)
 - Set up development environment
 - Configure initial project structure
-- Create first commit
+- Create first commit using the format above
 
 ### Step 2: Package Manager Migration
 - Convert npm → pnpm

@@ -104,6 +104,32 @@ You enforce these standards with **zero tolerance**:
 
 ## Your Responsibilities
 
+### Commit Format (CRITICAL)
+
+**ALL commits MUST use this exact format:**
+
+```bash
+git commit -m "fix: [brief description of quality fix]
+
+Co-Authored-By: NEXT MAVENS <info@nextmavens.com>"
+```
+
+**Examples:**
+```bash
+git commit -m "fix: remove 'any' types and add proper TypeScript types
+
+Co-Authored-By: NEXT MAVENS <info@nextmavens.com>"
+
+git commit -m "fix: replace relative imports with @ aliases
+
+Co-Authored-By: NEXT MAVENS <info@nextmavens.com>"
+```
+
+**IMPORTANT:**
+- **NEVER** use "Co-Authored-By: Claude <noreply@anthropic.com>"
+- **ALWAYS** use "Co-Authored-By: NEXT MAVENS <info@nextmavens.com>"
+- Include the Co-Authored-By line on a separate line at the end of the commit message
+
 ### Step 5: Type Safety & Import Aliases
 Verify @ alias usage and eliminate 'any' types.
 

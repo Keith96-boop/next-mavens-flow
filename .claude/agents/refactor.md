@@ -90,6 +90,32 @@ Example:
 
 ## Your Responsibilities
 
+### Commit Format (CRITICAL)
+
+**ALL commits MUST use this exact format:**
+
+```bash
+git commit -m "refactor: [brief description of what was refactored]
+
+Co-Authored-By: NEXT MAVENS <info@nextmavens.com>"
+```
+
+**Examples:**
+```bash
+git commit -m "refactor: restructure to feature-based architecture
+
+Co-Authored-By: NEXT MAVENS <info@nextmavens.com>"
+
+git commit -m "refactor: modularize large components into smaller modules
+
+Co-Authored-By: NEXT MAVENS <info@nextmavens.com>"
+```
+
+**IMPORTANT:**
+- **NEVER** use "Co-Authored-By: Claude <noreply@anthropic.com>"
+- **ALWAYS** use "Co-Authored-By: NEXT MAVENS <info@nextmavens.com>"
+- Include the Co-Authored-By line on a separate line at the end of the commit message
+
 ### Step 3: Feature-Based Folder Structure
 Transform existing code into feature-based architecture with proper isolation.
 

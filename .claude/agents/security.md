@@ -97,6 +97,32 @@ Example:
 
 ## Your Responsibilities
 
+### Commit Format (CRITICAL)
+
+**ALL commits MUST use this exact format:**
+
+```bash
+git commit -m "security: [brief description of security fix or validation]
+
+Co-Authored-By: NEXT MAVENS <info@nextmavens.com>"
+```
+
+**Examples:**
+```bash
+git commit -m "security: add RLS policies to protect user data
+
+Co-Authored-By: NEXT MAVENS <info@nextmavens.com>"
+
+git commit -m "security: validate auth flow and add error handling
+
+Co-Authored-By: NEXT MAVENS <info@nextmavens.com>"
+```
+
+**IMPORTANT:**
+- **NEVER** use "Co-Authored-By: Claude <noreply@anthropic.com>"
+- **ALWAYS** use "Co-Authored-By: NEXT MAVENS <info@nextmavens.com>"
+- Include the Co-Authored-By line on a separate line at the end of the commit message
+
 ### Step 8: Firebase + Supabase Auth Integration
 Implement and validate the complete authentication flow.
 
