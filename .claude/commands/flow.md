@@ -42,29 +42,23 @@ Before starting, the command validates:
    - If all PRDs complete: `✅ All PRDs complete! No work to do.`
    - Fix: Create a new PRD or add stories to existing PRD
 
-4. **Scan available MCP servers** (automatic)
-   - Run: `claude mcp list` to discover available MCP servers
-   - System adapts to whatever MCPs are configured
-   - Works with or without MCP servers
-
 ---
 
 When you execute `/flow start` or `/flow continue`:
 
 1. **Validate prerequisites** (docs/, PRD files, incomplete stories)
-2. **Scan available MCP servers** using `claude mcp list`
-3. Scan for incomplete PRDs
-4. Pick the first incomplete story
-5. **Spawn specialist agents directly using Task tool:**
+2. Scan for incomplete PRDs
+3. Pick the first incomplete story
+4. **Spawn specialist agents directly using Task tool:**
    - For each mavenStep in the story, spawn appropriate agent
-   - Include available MCP servers in agent context
+   - Tell agent which MCPs to use (from PRD mcpTools)
    - Wait for agent to complete before spawning next
    - Continue until all mavenSteps are done
-6. Run quality checks, commit, update PRD
-7. **Repeat automatically** for next story
-8. Continue until ALL PRDs have ALL stories passing
-9. Do NOT wait for user input between stories
-10. Do NOT stop after one story - keep going until ALL are complete
+5. Run quality checks, commit, update PRD
+6. **Repeat automatically** for next story
+7. Continue until ALL PRDs have ALL stories passing
+8. Do NOT wait for user input between stories
+9. Do NOT stop after one story - keep going until ALL are complete
 
 **Example:**
 ```
@@ -75,32 +69,29 @@ When you execute `/flow start` or `/flow continue`:
 1. Scans for all `docs/prd-*.json` files
 2. For each PRD, checks if all stories have `passes: true`
 3. Finds the first PRD with incomplete stories
-4. **Scans available MCP servers** using `claude mcp list`
-5. For each incomplete story (in priority order):
+4. For each incomplete story (in priority order):
    - Read story's mavenSteps array
-   - Read story's availableMcpTools (if specified)
-   - **Merge PRD MCP hints with actual available MCPs**
+   - Read story's mcpTools (if specified for each step)
    - **Spawn specialist agents directly:**
      - Step 1, 2, 7, 9 → Task(subagent_type="development-agent")
      - Step 3, 4, 6 → Task(subagent_type="refactor-agent")
      - Step 5 → Task(subagent_type="quality-agent")
      - Step 8, 10 → Task(subagent_type="security-agent")
      - Step 11 → Task(subagent_type="design-agent") [optional, for mobile apps]
-   - **Include available MCP context in agent prompt:**
+   - **Tell agent which MCPs to use:**
      ```
-     Available MCP servers: [list of actually available MCPs]
-     Story-suggested MCPs: [from PRD availableMcpTools if specified]
-     Use whichever MCPs are actually available.
+     Story: US-POS-001, Step 1
+     Use these MCPs: supabase
      ```
    - Wait for each agent to complete
    - Run quality checks (typecheck, lint)
    - Commit changes
    - Update PRD (set passes: true)
    - Append to progress file
-6. Move to next incomplete story
-7. When PRD complete, move to next incomplete PRD
-8. Continue until all PRDs are complete
-9. Default: 10 iterations (stories) unless specified
+5. Move to next incomplete story
+6. When PRD complete, move to next incomplete PRD
+7. Continue until all PRDs are complete
+8. Default: 10 iterations (stories) unless specified
 
 ### Check status
 ```
@@ -267,39 +258,33 @@ For each incomplete story:
 
 **From PRD:**
 - mavenSteps: [1, 3, 5, 7]
-- availableMcpTools: { development-agent: [...], refactor-agent: [...] } (optional)
+- mcpTools: { step1: ["supabase"], step7: ["supabase", "web-search"] }
 - Description: [Story description]
 - Acceptance Criteria: [List from PRD]
-
-**MCP Discovery:**
-Running: claude mcp list
-Found: 5 MCP servers (supabase, web-search-prime, web-reader, chrome-devtools, zai-mcp-server)
 
 **Processing:**
 
 1. [Step 1 - Foundation]
    Spawning development agent...
-   Available MCP servers: supabase, web-search-prime, web-reader, chrome-devtools, zai-mcp-server
-   Story-suggested MCPs: supabase, web-search-prime (if specified in PRD)
+   Instruction: "Use supabase MCP"
    → [Waiting for completion]
    → [Agent completed successfully]
 
 2. [Step 3 - Feature Structure]
    Spawning refactor agent...
-   Available MCP servers: (all MCPs available, but none specifically needed)
+   Instruction: "No MCPs needed"
    → [Waiting for completion]
    → [Agent completed successfully]
 
 3. [Step 5 - Type Safety]
    Spawning quality agent...
-   Available MCP servers: (all MCPs available)
+   Instruction: "No MCPs needed"
    → [Waiting for completion]
    → [Agent completed successfully]
 
 4. [Step 7 - Data Layer]
    Spawning development agent...
-   Available MCP servers: supabase, web-search-prime, web-reader, chrome-devtools, zai-mcp-server
-   Story-suggested MCPs: database (supabase if available)
+   Instruction: "Use supabase MCP, web-search MCP"
    → [Waiting for completion]
    → [Agent completed successfully]
 
@@ -324,43 +309,32 @@ Co-Authored-By: NEXT MAVENS <info@nextmavens.com>"
 ✅ Story [Story ID] complete
 ```
 
-**IMPORTANT: Dynamic MCP Discovery**
+**IMPORTANT: MCP Assignment**
 
-The flow command automatically discovers available MCP servers at runtime:
-
-1. **Scan MCPs:** Run `claude mcp list` to get all configured MCP servers
-2. **Merge with PRD hints:** Combine PRD `availableMcpTools` (if specified) with actual available MCPs
-3. **Pass to agents:** Include the available MCP list in each agent's prompt
-4. **Agent adapts:** Agents use whatever MCPs are actually available
-
-**PRD MCP Configuration (Optional):**
+The PRD file specifies which MCPs to use for each step:
 
 ```json
 {
   "id": "US-001",
   "mavenSteps": [1, 7],
-  "availableMcpTools": {
-    "development-agent": [
-      { "mcp": "database" },
-      { "mcp": "web-search" }
-    ]
+  "mcpTools": {
+    "step1": ["supabase"],
+    "step7": ["supabase", "web-search-prime"]
   }
 }
 ```
 
 **How it works:**
-- **If** the specified MCPs are available → prioritize those
-- **If not available** → use whatever MCPs are available
-- **If no MCPs available** → use standard tools (Read, Write, Bash, etc.)
+1. Read the PRD's `mcpTools` for the current step
+2. Tell the agent: "Use these MCPs: [list]"
+3. Agent figures out how to use them
+4. If MCPs aren't specified, agent uses standard tools
 
-**Why story-level MCP tools?**
-
-1. **Context Isolation:** Prevents confusion as context grows large
-2. **Precision:** Agents know which MCP servers might be helpful for that story
-3. **No Hallucination:** Reduces risk of agents "forgetting" available tools
-4. **Granular Control:** Different stories can suggest different MCP preferences
-5. **Dynamic Discovery:** Flow scans actual available MCPs at runtime and merges with PRD hints
-6. **Optional & Hint-Based:** PRD MCPs are suggestions, not requirements - system works without them
+**Simple and direct:**
+- No complex discovery or categorization
+- No merging or mapping logic
+- Just pass the MCP names to the agent
+- Agent knows their own tools and how to use them
 
 ## Feature-Based Architecture
 
