@@ -259,25 +259,25 @@ For each incomplete story:
 
 1. [Step 1 - Foundation]
    Spawning development agent...
-   Available MCP tools: supabase_query, supabase_exec, webSearchPrime
+   Available MCP: supabase, web-search-prime
    → [Waiting for completion]
    → [Agent completed successfully]
 
 2. [Step 3 - Feature Structure]
    Spawning refactor agent...
-   Available MCP tools: (none)
+   Available MCP: (none)
    → [Waiting for completion]
    → [Agent completed successfully]
 
 3. [Step 5 - Type Safety]
    Spawning quality agent...
-   Available MCP tools: (none)
+   Available MCP: (none)
    → [Waiting for completion]
    → [Agent completed successfully]
 
 4. [Step 7 - Data Layer]
    Spawning development agent...
-   Available MCP tools: supabase_query, supabase_exec, webSearchPrime
+   Available MCP: supabase, web-search-prime
    → [Waiting for completion]
    → [Agent completed successfully]
 
@@ -304,7 +304,7 @@ Co-Authored-By: NEXT MAVENS <info@nextmavens.com>"
 
 **IMPORTANT: Story-Level MCP Tools**
 
-Each story has its own `availableMcpTools` object that specifies exactly which MCP tools each agent can use for that specific story:
+Each story has its own `availableMcpTools` object that specifies which MCP servers each agent can access for that specific story:
 
 ```json
 {
@@ -312,7 +312,8 @@ Each story has its own `availableMcpTools` object that specifies exactly which M
   "mavenSteps": [1, 7],
   "availableMcpTools": {
     "development-agent": [
-      { "mcp": "supabase", "tools": ["supabase_query", "supabase_exec"] }
+      { "mcp": "supabase" },
+      { "mcp": "web-search-prime" }
     ]
   }
 }
@@ -321,9 +322,10 @@ Each story has its own `availableMcpTools` object that specifies exactly which M
 **Why story-level MCP tools?**
 
 1. **Context Isolation:** Prevents confusion as context grows large
-2. **Precision:** Agents know exactly which tools to use for that story
+2. **Precision:** Agents know exactly which MCP servers to use for that story
 3. **No Hallucination:** Reduces risk of agents "forgetting" available tools
 4. **Granular Control:** Different stories can use different MCP tool subsets
+5. **Dynamic Discovery:** Agents discover the exact tool names at runtime from their available tool set
 
 ## Feature-Based Architecture
 

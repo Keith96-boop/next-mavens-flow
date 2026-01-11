@@ -17,6 +17,12 @@ This document provides comprehensive reference for all MCP tools available to Ma
 - Verifying RLS (Row Level Security) policies
 - Checking database permissions
 
+**How to use:**
+- Use the Supabase MCP tools directly from your available tool set
+- Look for tools with `supabase` prefix or database-related names
+- **Do NOT** write custom fetch() calls or use the Supabase REST API directly
+- The exact tool names may vary - use what's available in your tool set
+
 **Before using Supabase MCP:**
 1. **CONFIRM the Supabase project ID** - Check environment files, config files
 2. **NEVER assume** - Always verify the project ID before operations
@@ -103,38 +109,46 @@ Examples:
 
 **CRITICAL:** MCP tools are assigned PER STORY in the PRD JSON's `availableMcpTools` object, not at the PRD level.
 
-Example story configuration:
+**When you are spawned as an agent:**
+1. Check your available tool set - the MCP tools you have access to will be visible
+2. Use the MCP tools that are available to you
+3. The story configuration specifies which MCP servers you can access
+4. The exact tool names are discovered dynamically - use what you see available
+
+**Example story configuration:**
 ```json
 {
   "id": "US-001",
   "mavenSteps": [1, 7],
   "availableMcpTools": {
     "development-agent": [
-      { "mcp": "supabase", "tools": ["supabase_query", "supabase_exec"] },
-      { "mcp": "web-search-prime", "tools": ["webSearchPrime"] }
+      { "mcp": "supabase" },
+      { "mcp": "web-search-prime" }
     ]
   }
 }
 ```
 
-When processing a story:
-1. Check the story's `availableMcpTools` object
-2. Use ONLY the MCP tools listed for your agent type
-3. If no MCP tools are listed for your agent, do not use any
+**This means:**
+- You have access to Supabase MCP and Web Search Prime MCP servers
+- When you check your available tools, you'll see the specific tools from these servers
+- Use the tools that appear in your tool set - don't hardcode specific tool names
 
 ---
 
 ## MCP Tool Pattern Reference
 
-| Tool Pattern | Use For Steps | Example Tools | Primary Agents |
-|-------------|---------------|---------------|----------------|
-| supabase_* | 7, 8, 10 | supabase_query, supabase_exec | development, security |
-| postgres_*, mysql_*, mongo_* | 7, 8, 10 | Database operations | development, security |
-| web_search_*, search_* | All steps | Research, documentation | All agents |
-| web_reader_*, fetch_* | All steps | Reading web content | All agents |
-| chrome_*, browser_*, puppeteer_* | Testing | Browser automation | All agents |
-| vercel_*, wrangler_*, cloudflare_* | 9 | Deployment | development |
-| figma_*, design_* | 11 | UI/UX design | design |
+**Note:** This is a general reference. The exact tool names available to you depend on what MCP servers are configured in your environment. When working on a story, check your available tool set to see what MCP tools you have access to.
+
+| MCP Server | Use For Steps | Typical Use Case | Primary Agents |
+|------------|---------------|------------------|----------------|
+| supabase | 7, 8, 10 | Database operations | development, security |
+| postgres, mysql, mongo | 7, 8, 10 | Database operations | development, security |
+| web-search, search | All steps | Research, documentation | All agents |
+| web-reader, fetch | All steps | Reading web content | All agents |
+| chrome, browser, puppeteer | Testing | Browser automation | All agents |
+| vercel, wrangler, cloudflare | 9 | Deployment | development |
+| figma, design | 11 | UI/UX design | design |
 
 ---
 
