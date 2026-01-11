@@ -15,56 +15,53 @@ Take a PRD and convert it to `docs/prd-[feature-name].json`. Create `docs/` fold
 
 **Important:** Each feature gets its own PRD JSON file. The flow command will scan for all `prd-*.json` files in `docs/` and process incomplete ones.
 
-**CRITICAL:** Before converting, automatically scan for available MCP tools and include them in the JSON so agents know what tools they can use.
+**CRITICAL:** Each story MUST have its own `availableMcpTools` object specifying which MCP tools each agent can use for that specific story. This prevents context overload and hallucination.
 
 ---
 
-## MCP Tool Discovery (Automatic)
+## MCP Tool Assignment (Story-Level, Manual)
 
-When converting a PRD to JSON, the system MUST:
+**CRITICAL ARCHITECTURE DECISION:** MCP tools are assigned PER STORY, not at the PRD level. This prevents context overload and hallucination.
 
-1. **Scan for configured MCP servers** in `~/.claude/settings.json`
-2. **Discover available tools** from each MCP
-3. **Map tools to Maven steps** based on patterns
-4. **Include in the PRD JSON** so agents know what tools are available
+**Why Story-Level MCP Tools?**
 
-**MCP Discovery Process:**
+1. **Context Isolation:** Each story has its own specific MCP tools, reducing confusion as context grows
+2. **Precision:** Agents know exactly which tools to use for that specific story
+3. **No Hallucination:** Prevents agents from "forgetting" which tools are available in large contexts
+4. **Granular Control:** Different stories can use different subsets of MCP tools
+
+**How to Assign MCP Tools to Stories:**
+
+When creating a PRD JSON, for each story:
+
+1. **Identify which Maven steps** the story requires (see Maven Steps Field section below)
+2. **For each step**, identify which agent handles it (development-agent, refactor-agent, etc.)
+3. **Manually assign MCP tools** that agent will need for THIS SPECIFIC STORY
+4. **List tools in `availableMcpTools`** object at the story level
+
+**MCP Tool Reference:**
+
+| Tool Pattern | Use For Steps | Example Tools |
+|-------------|---------------|---------------|
+| supabase_* | 7, 8, 10 | supabase_query, supabase_exec |
+| postgres_*, mysql_*, mongo_* | 7, 8, 10 | Database operations |
+| web_search_*, search_* | All steps | Research, documentation |
+| web_reader_*, fetch_* | All steps | Reading web content |
+| chrome_*, browser_*, puppeteer_* | Testing | Browser automation |
+| vercel_*, wrangler_*, cloudflare_* | 9 | Deployment |
+| figma_*, design_* | 11 | UI/UX design |
+
+**Checking Available MCPs:**
 
 ```bash
-# 1. List configured MCP servers using Claude CLI
+# List all configured MCP servers
 claude mcp list
 
-# 2. For each MCP server, get detailed information
+# Get detailed info about a specific MCP server
 claude mcp get <server-name>
-
-# 3. Identify available tools from current session
-# Tools are visible to the AI session prefixed with mcp__
-# The AI can introspect available tools in its current context
-
-# 4. Pattern-match tools to Maven steps based on tool names
-# Database: supabase_*, postgres_*, mysql_*, mongo_* → Steps 7, 8, 10
-# Web search: web_search_*, search_* → All steps
-# Web reader: web_reader_*, fetch_* → All steps
-# Browser: chrome_*, browser_*, puppeteer_* → Testing steps
-# Deployment: vercel_*, wrangler_*, cloudflare_* → Step 9
-# Design: figma_*, design_* → Step 11
-
-# 5. Include discovered tools in PRD JSON
 ```
 
-**MCP Discovery Commands:**
-
-| Command | Purpose |
-|---------|---------|
-| `claude mcp list` | List all configured MCP servers and their connection status |
-| `claude mcp get <name>` | Get detailed info about a specific MCP server |
-| `claude mcp add` | Add a new MCP server |
-| `claude mcp remove <name>` | Remove an MCP server |
-
-**Discovery approach:**
-1. Use `claude mcp list` to get all configured MCP servers
-2. For each connected MCP, identify its tools from the current session (tools with `mcp__` prefix)
-3. Map tool names to Maven workflow steps based on naming patterns
+**IMPORTANT:** The `/setup` command has been REMOVED. MCP tools are now manually assigned per story during PRD creation to prevent architecture confusion.
 
 ---
 
@@ -118,6 +115,10 @@ claude mcp get <server-name>
   ]
 }
 ```
+
+**NOTE:** The `mcpDiscovery` object is OPTIONAL metadata that records which MCP servers were configured when the PRD was created. It is NOT used for automatic tool assignment. Actual MCP tools used by each story are specified in the story-level `availableMcpTools` object.
+
+---
 
 **CRITICAL ARCHITECTURAL DECISION:**
 
