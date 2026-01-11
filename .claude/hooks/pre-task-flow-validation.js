@@ -8,7 +8,7 @@
  * - refactor-agent
  * - quality-agent
  * - security-agent
- * - prd-update (requires PRD files exist)
+ * - design-agent
  *
  * Usage: Called by Claude Code via PreToolUse hook in flow.md
  */
@@ -22,9 +22,7 @@ const MAVEN_FLOW_AGENTS = [
   'refactor-agent',
   'quality-agent',
   'security-agent',
-  'prd-update',
-  // Legacy name for backward compatibility
-  'flow-iteration'
+  'design-agent'
 ];
 
 function main() {
