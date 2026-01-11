@@ -75,6 +75,7 @@ When you execute `/flow start` or `/flow continue`:
      - Step 3, 4, 6 → Task(subagent_type="refactor-agent")
      - Step 5 → Task(subagent_type="quality-agent")
      - Step 8, 10 → Task(subagent_type="security-agent")
+     - Step 11 → Task(subagent_type="design-agent") [optional, for mobile apps]
    - Wait for each agent to complete
    - Run quality checks (typecheck, lint)
    - Commit changes
@@ -168,7 +169,7 @@ Recent progress:
 | `docs/progress-[feature-name].txt` | Append-only log of learnings and context for each feature |
 | `AGENTS.md` | Codebase patterns and conventions (auto-updated during flow) |
 
-## Maven 10-Step Workflow
+## Maven 10-Step Workflow (Plus Optional Design Step)
 
 Each story is implemented using the Maven workflow:
 
@@ -184,6 +185,9 @@ Each story is implemented using the Maven workflow:
 | **8** | security-agent | 🔴 Red | Firebase + Supabase authentication flow |
 | **9** | development-agent | 🟢 Green | MCP integrations (web-search, web-reader, chrome, expo, supabase) |
 | **10** | security-agent | 🔴 Red | Security and error handling |
+| **11** | design-agent | 🩷 Pink | **Mobile Design** - Professional UI/UX for Expo/React Native (optional) |
+
+**Step 11 is optional** and specifically for mobile app (Expo/React Native) projects. It applies Apple's design methodology to transform basic UIs into professional, polished mobile experiences.
 
 ## Workflow
 
@@ -236,6 +240,7 @@ The `/flow` command maps each step in the story's `mavenSteps` array to the appr
 | 8 | Auth Integration | security-agent | Firebase + Supabase authentication flow |
 | 9 | MCP Integration | development-agent | MCP integrations (web-search, web-reader, chrome, expo, supabase) |
 | 10 | Security & Error Handling | security-agent | Security and error handling |
+| 11 | Mobile Design | design-agent | Professional UI/UX for Expo/React Native (optional) |
 
 ### Story Processing Flow
 
@@ -321,6 +326,22 @@ src/
 - **Quality hooks:** Automatically configured in `maven-flow/.claude/settings.json`
 - **Browser verification:** UI stories should include browser testing steps
 - **Agent coordination:** The /flow command directly spawns specialist agents for each mavenStep
+
+### Mobile App Development (Expo/React Native)
+
+- **Step 11 (design-agent)**: Add to stories for mobile apps to apply professional UI/UX design
+- **Design principles**: Based on Apple's design methodology (Structure, Navigation, Content, Visual Design)
+- **Expo integration**: Design-agent validates changes using Expo preview
+- **When to use**: Include Step 11 in mavenSteps for stories that create or modify mobile UI screens
+- **Example PRD story for mobile**:
+  ```json
+  {
+    "id": "US-001",
+    "title": "Create mobile home screen",
+    "mavenSteps": [1, 3, 5, 6, 11],
+    "description": "Create the main home screen for the mobile app"
+  }
+  ```
 
 ## Troubleshooting
 
