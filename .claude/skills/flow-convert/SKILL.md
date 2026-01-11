@@ -15,6 +15,55 @@ Take a PRD and convert it to `docs/prd-[feature-name].json`. Create `docs/` fold
 
 **Important:** Each feature gets its own PRD JSON file. The flow command will scan for all `prd-*.json` files in `docs/` and process incomplete ones.
 
+**CRITICAL:** Before converting, automatically scan for available MCP tools and include them in the JSON so agents know what tools they can use.
+
+---
+
+## MCP Tool Discovery (Automatic)
+
+When converting a PRD to JSON, the system MUST:
+
+1. **Scan for configured MCP servers** in `~/.claude/settings.json`
+2. **Discover available tools** from each MCP
+3. **Map tools to Maven steps** based on patterns
+4. **Include in the PRD JSON** so agents know what tools are available
+
+**MCP Discovery Process:**
+
+```bash
+# 1. Scan configured MCPs using bash
+# Get the settings file location (cross-platform)
+claude_settings_path="$HOME/.claude/settings.json"
+if [[ "$OSTYPE" == "msys" ]] || [[ "$OSTYPE" == "win32" ]]; then
+  claude_settings_path="$USERPROFILE/.claude/settings.json"
+fi
+
+# Extract MCP server names from settings
+configured_mcps=$(cat "$claude_settings_path" 2>/dev/null | grep -o '"mcpServers"' -A 100 | grep -o '"[^"]*":' | grep -v "mcpServers" | tr -d '":')
+
+# 2. For each MCP, identify its tools from the MCP tools available in current session
+# Use pattern matching on available tool names (tools are prefixed with mcp__)
+available_tools=$(claude -p "List all available MCP tools as JSON" --output-format json 2>/dev/null)
+
+# OR: Read from current session context - tools with mcp__ prefix
+# This is done by checking what tools the AI actually has access to
+
+# 3. Pattern-match tools to Maven steps
+# Database: supabase_*, postgres_*, mysql_*, mongo_* → Steps 7, 8, 10
+# Web search: web_search_*, search_* → All steps
+# Web reader: web_reader_*, fetch_* → All steps
+# Browser: chrome_*, browser_*, puppeteer_* → Testing steps
+# Deployment: vercel_*, wrangler_*, cloudflare_* → Step 9
+# Design: figma_*, design_* → Step 11
+
+# 4. Include discovered tools in PRD JSON
+```
+
+**IMPORTANT:** Since there's no `claude mcp list` command yet (GitHub issue #6574), discovery works by:
+1. Reading `~/.claude/settings.json` via bash to get configured MCP servers
+2. Pattern-matching available tools in the current session (tools prefixed with `mcp__`)
+3. Mapping tool names to Maven workflow steps based on naming patterns
+
 ---
 
 ## Output Format
@@ -24,6 +73,52 @@ Take a PRD and convert it to `docs/prd-[feature-name].json`. Create `docs/` fold
   "project": "[Project Name]",
   "branchName": "flow/[feature-name-kebab-case]",
   "description": "[Feature description from PRD]",
+  "availableMcpTools": {
+    "lastScanned": "2025-01-11T14:00:00Z",
+    "configuredMCPs": {
+      "supabase": {
+        "status": "connected",
+        "tools": ["supabase_query", "supabase_exec", "supabase_subscribe"],
+        "mappedToSteps": [7, 8, 10],
+        "toolPurpose": "Database operations, RLS policies, migrations"
+      },
+      "web-search-prime": {
+        "status": "connected",
+        "tools": ["webSearchPrime"],
+        "mappedToSteps": "all",
+        "toolPurpose": "Web research for dependencies and documentation"
+      },
+      "web-reader": {
+        "status": "connected",
+        "tools": ["webReader"],
+        "mappedToSteps": "all",
+        "toolPurpose": "Fetch and read documentation from URLs"
+      }
+    },
+    "agentToolAssignments": {
+      "development-agent": {
+        "mcpTools": [
+          { "mcp": "supabase", "tools": ["supabase_query", "supabase_exec"] },
+          { "mcp": "web-search-prime", "tools": ["webSearchPrime"] },
+          { "mcp": "web-reader", "tools": ["webReader"] }
+        ]
+      },
+      "security-agent": {
+        "mcpTools": [
+          { "mcp": "supabase", "tools": ["supabase_query", "supabase_subscribe"] }
+        ]
+      },
+      "refactor-agent": {
+        "mcpTools": []
+      },
+      "quality-agent": {
+        "mcpTools": []
+      },
+      "design-agent": {
+        "mcpTools": []
+      }
+    }
+  },
   "userStories": [
     {
       "id": "US-001",
