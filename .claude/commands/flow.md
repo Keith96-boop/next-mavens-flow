@@ -554,7 +554,7 @@ Each story is implemented through specific steps, each handled by a specialist a
 - Applies professional visual design
 - Implements proper navigation patterns
 - Ensures touch targets (44x44pt minimum)
-- Validates in Expo preview
+- Validates in ios simulator or Android emulator
 - Commits with prefix `design:`
 
 ### testing-agent (🟠 Orange)
@@ -586,10 +586,10 @@ Each story is implemented through specific steps, each handled by a specialist a
 ---
 
 ### mobile-app-agent (🔵 Cyan)
-**Use for:** Mobile development (React Native + Expo apps)
+**Use for:** Mobile development (React Native CLI apps)
 
 **Responsibilities:**
-- Mobile screen implementation with Expo Router
+- Mobile screen implementation with React Navigation
 - Offline-first data management with TanStack Query
 - Native UI patterns (swipe, pull-to-refresh, bottom sheets)
 - NativeWind styling (Tailwind for React Native)
@@ -602,7 +602,7 @@ Each story is implemented through specific steps, each handled by a specialist a
 - Uses NativeWind utility classes for styling
 - Integrates Firebase Cloud Messaging for push notifications
 - Implements native UI patterns (pull-to-refresh, swipe actions)
-- Tests with Expo Go or device simulators
+- Tests with iOS simulator or Android emulator or device simulators
 - Uses same Supabase backend as web app
 - Commits with prefix `mobile:`
 
@@ -613,17 +613,17 @@ Each story is implemented through specific steps, each handled by a specialist a
 **Mobile Location:**
 - Works in `mobile/` folder
 - Mobile PRDs in `mobile/docs/prd-*.json`
-- Uses Expo Router (file-based routing)
+- Uses React Navigation (file-based routing)
 - TypeScript with strict mode
 
 **Server Management:**
-- Expo server runs on port 8081
-- Stop ONLY Expo process, not all Node processes
+- Metro bundler runs on port 8081
+- Stop ONLY Metro process, not all Node processes
 - Use: `kill -9 $(lsof -ti:8081)`
 
 **Tech Stack:**
-- Frontend: React Native + Expo
-- Navigation: Expo Router
+- Frontend: React Native CLI
+- Navigation: React Navigation
 - Styling: NativeWind (Tailwind)
 - State: TanStack Query + Zustand
 - Auth: Firebase Authentication
@@ -712,9 +712,9 @@ Each story is implemented using the Maven workflow:
 | **8** | security-agent | 🔴 Red | Firebase + Supabase authentication flow |
 | **9** | development-agent | 🟢 Green | MCP integrations (web-search, web-reader, chrome, expo, supabase) |
 | **10** | security-agent | 🔴 Red | Security and error handling |
-| **11** | design-agent | 🩷 Pink | **Mobile Design** - Professional UI/UX for Expo/React Native (optional) |
+| **11** | design-agent | 🩷 Pink | **Mobile Design** - Professional UI/UX for React Native CLI (optional) |
 
-**Step 11 is optional** and specifically for mobile app (Expo/React Native) projects. It applies Apple's design methodology to transform basic UIs into professional, polished mobile experiences.
+**Step 11 is optional** and specifically for mobile app (React Native CLI) projects. It applies Apple's design methodology to transform basic UIs into professional, polished mobile experiences.
 
 ## Workflow
 
@@ -767,7 +767,7 @@ The `/flow` command maps each step in the story's `mavenSteps` array to the appr
 | 8 | Auth Integration | security-agent | Firebase + Supabase authentication flow |
 | 9 | MCP Integration | development-agent | MCP integrations (web-search, web-reader, chrome, expo, supabase) |
 | 10 | Security & Error Handling | security-agent | Security and error handling |
-| 11 | Mobile Design | design-agent | Professional UI/UX for Expo/React Native (optional) |
+| 11 | Mobile Design | design-agent | Professional UI/UX for React Native CLI (optional) |
 
 ### Story Processing Flow
 
@@ -888,11 +888,11 @@ src/
 - **Browser verification:** UI stories should include browser testing steps
 - **Agent coordination:** The /flow command directly spawns specialist agents for each mavenStep
 
-### Mobile App Development (Expo/React Native)
+### Mobile App Development (React Native CLI)
 
 - **Step 11 (design-agent)**: Add to stories for mobile apps to apply professional UI/UX design
 - **Design principles**: Based on Apple's design methodology (Structure, Navigation, Content, Visual Design)
-- **Expo integration**: Design-agent validates changes using Expo preview
+- **Testing**: Design-agent validates changes using ios simulator or Android emulator
 - **When to use**: Include Step 11 in mavenSteps for stories that create or modify mobile UI screens
 - **Example PRD story for mobile**:
   ```json
@@ -1287,7 +1287,7 @@ cat docs/errors-task-priority.md
 
 ## Mobile Development
 
-Maven Flow includes comprehensive support for React Native + Expo mobile app development with shared Supabase backend.
+Maven Flow includes comprehensive support for React Native CLI mobile app development with shared Supabase backend.
 
 ### Quick Start for Mobile
 
@@ -1319,7 +1319,7 @@ Maven Flow detects mobile PRDs and uses mobile-app-agent for implementation.
 
 ```
 mobile/
-├── app/                    # Expo Router screens (file-based routing)
+├── app/                    # React Navigation screens (file-based routing)
 │   ├── (tabs)/            # Tab navigation screens
 │   ├── auth/              # Authentication screens
 │   └── _layout.tsx        # Root layout
@@ -1339,8 +1339,8 @@ mobile/
 
 | Layer | Technology |
 |-------|------------|
-| **Framework** | React Native + Expo SDK 51 |
-| **Navigation** | Expo Router (file-based routing) |
+| **Framework** | React Native CLI SDK 51 |
+| **Navigation** | React Navigation (file-based routing) |
 | **Styling** | NativeWind (Tailwind for React Native) |
 | **State** | TanStack Query + Zustand |
 | **Auth** | Firebase Authentication |
@@ -1388,9 +1388,9 @@ Use mobile-specific interactions:
 ### Commands
 
 #### `/flow-mobile setup`
-Creates complete React Native + Expo mobile app:
+Creates complete React Native CLI mobile app:
 - Installs all dependencies
-- Configures Expo Router
+- Configures React Navigation
 - Sets up NativeWind styling
 - Configures Supabase client (shared with web)
 - Configures Firebase Auth + FCM
@@ -1400,7 +1400,7 @@ Creates complete React Native + Expo mobile app:
 #### `/flow-mobile status`
 Shows mobile app status:
 - Mobile folder existence
-- Expo configuration
+- React Native CLI configuration
 - Dependencies status
 - Supabase connection
 - Firebase configuration
@@ -1452,11 +1452,11 @@ flow-prd-mobile user-auth
 
 ### Testing Mobile Apps
 
-**Test with Expo Go (quickest):**
+**Test with iOS simulator or Android emulator (quickest):**
 ```bash
 cd mobile
 pnpm start
-# Scan QR code with Expo Go app on phone
+# Scan QR code with iOS simulator or Android emulator app on phone
 ```
 
 **Test on iOS simulator:**
@@ -1560,7 +1560,7 @@ Mobile PRDs include additional fields:
 
 | Maven Step | Agent | Purpose for Mobile |
 |------------|-------|-------------------|
-| 1 | mobile-app-agent | Create mobile screens with Expo Router |
+| 1 | mobile-app-agent | Create mobile screens with React Navigation |
 | 2 | mobile-app-agent | Mobile dependencies setup |
 | 3 | mobile-app-agent | Mobile folder structure |
 | 5 | quality-agent | Type safety (same as web) |
@@ -1575,8 +1575,8 @@ Mobile PRDs include additional fields:
 
 | Aspect | Web | Mobile |
 |--------|-----|--------|
-| **Framework** | Next.js | React Native + Expo |
-| **Routing** | Next.js App Router | Expo Router |
+| **Framework** | Next.js | React Native CLI |
+| **Routing** | Next.js App Router | React Navigation |
 | **Styling** | Tailwind CSS | NativeWind (Tailwind) |
 | **State** | TanStack Query | TanStack Query + AsyncStorage |
 | **Navigation** | Links/buttons | Tabs/stacks/gestures |
@@ -1588,7 +1588,7 @@ Mobile PRDs include additional fields:
 
 ### Server Management for Mobile
 
-**Expo server runs on port 8081.**
+**Metro bundler runs on port 8081.**
 
 **❌ FORBIDDEN:**
 ```bash
@@ -1598,7 +1598,7 @@ killall node
 
 **✅ CORRECT:**
 ```bash
-# Find Expo server
+# Find Metro bundler
 lsof -ti:8081
 # Kill ONLY that process
 kill -9 $(lsof -ti:8081)
@@ -1648,7 +1648,7 @@ kill -9 $(lsof -ti:8081)
 
 **Total time:** ~1.5 hours
 
-### Workflow 4: Mobile App (Expo/React Native)
+### Workflow 4: Mobile App (React Native CLI)
 
 **Story requires:** Mobile screen with professional design
 

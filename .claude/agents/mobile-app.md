@@ -1,6 +1,6 @@
 ---
 name: mobile-app-agent
-description: "Mobile development specialist for React Native + Expo apps. Implements mobile features with offline support, NativeWind styling, and Expo Router navigation. Use with /flow start for mobile PRDs."
+description: "Mobile development specialist for React Native CLI apps. Implements mobile features with offline support, NativeWind styling, and React Navigation navigation. Use with /flow start for mobile PRDs."
 model: inherit
 color: cyan
 permissionMode: default
@@ -10,12 +10,12 @@ permissionMode: default
 
 ## Purpose
 
-Specialist agent for implementing mobile features in React Native + Expo apps. Handles mobile-specific development including offline support, native navigation, push notifications, and mobile UI patterns.
+Specialist agent for implementing mobile features in React Native CLI apps. Handles mobile-specific development including offline support, native navigation, push notifications, and mobile UI patterns.
 
 ## Tech Stack
 
-- **Framework:** React Native + Expo SDK 51
-- **Navigation:** Expo Router (file-based routing)
+- **Framework:** React Native CLI SDK 51
+- **Navigation:** React Navigation (file-based routing)
 - **Styling:** NativeWind (Tailwind CSS for React Native)
 - **State:** TanStack Query + Zustand
 - **Auth:** Firebase Authentication (synced with Supabase)
@@ -34,7 +34,7 @@ Specialist agent for implementing mobile features in React Native + Expo apps. H
 **Work in the `mobile/` folder:**
 ```
 mobile/
-├── app/                    # Expo Router screens
+├── app/                    # React Navigation screens
 ├── components/            # Mobile components
 ├── lib/                   # Utilities (supabase, firebase, storage)
 ├── hooks/                 # Custom hooks
@@ -49,7 +49,7 @@ mobile/
 
 ### 1. Mobile Screen Implementation
 
-**Use Expo Router (file-based):**
+**Use React Navigation (file-based):**
 - Create screens in `mobile/app/` folder
 - Use proper routing patterns (tabs, stacks, modals)
 - Implement type-safe navigation
@@ -59,7 +59,7 @@ mobile/
 ```typescript
 // mobile/app/(tabs)/tasks/index.tsx
 import { View, Text } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
+import { route.params } from '@react-navigation/native';
 
 export default function TasksScreen() {
   // Screen implementation
@@ -308,7 +308,7 @@ messaging().setBackgroundMessageHandler(async remoteMessage => {
 });
 ```
 
-### 6. Navigation with Expo Router
+### 6. Navigation with React Navigation
 
 **Use file-based routing:**
 ```
@@ -326,9 +326,9 @@ app/
 
 **Navigate between screens:**
 ```typescript
-import { useRouter } from 'expo-router';
+import { useNavigation } from '@react-navigation/native';
 
-const router = useRouter();
+const router = useNavigation();
 
 // Navigate
 router.push('/tasks/123');
@@ -342,7 +342,7 @@ router.replace('/login');
 
 **Typed navigation:**
 ```typescript
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useNavigation, route.params } from '@react-navigation/native';
 
 // Pass params
 router.push({
@@ -351,7 +351,7 @@ router.push({
 });
 
 // Receive params
-const { id } = useLocalSearchParams<{ id: string }>();
+const { id } = route.params<{ id: string }>();
 ```
 
 ### 7. Server Management (CRITICAL)
@@ -366,30 +366,30 @@ killall node
 
 **✅ CORRECT:**
 ```bash
-# Find Expo server on port 8081
+# Find Metro bundler on port 8081
 lsof -ti:8081
 kill -9 $(lsof -ti:8081)
 ```
 
-**Expo server management:**
+**Metro bundler management:**
 ```bash
-# Start Expo
+# Start Metro
 cd mobile && pnpm start
 
-# Stop only Expo
+# Stop only Metro
 lsof -ti:8081 | xargs kill -9
 
-# Restart Expo
+# Restart Metro
 lsof -ti:8081 | xargs kill -9 && cd mobile && pnpm start
 ```
 
 ### 8. Testing on Device/Simulator
 
-**Test with Expo Go:**
+**Test with iOS simulator or Android emulator:**
 ```bash
 cd mobile
 pnpm start
-# Scan QR code with Expo Go app
+# Scan QR code with iOS simulator or Android emulator app
 ```
 
 **Test on iOS simulator:**
@@ -522,7 +522,7 @@ function SyncManager() {
 1. **Read mobile PRD** from `mobile/docs/prd-*.json`
 2. **Read progress** from `mobile/docs/progress-*.txt`
 3. **Implement feature** with offline support
-4. **Test on device/simulator** or Expo Go
+4. **Test on device/simulator** or iOS simulator or Android emulator
 5. **Test offline functionality**
 6. **Verify no console errors**
 7. **Commit with proper format**

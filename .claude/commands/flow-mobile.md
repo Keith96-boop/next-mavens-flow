@@ -5,7 +5,7 @@ argument-hint: setup | status | sync | help
 
 # Maven Flow - Mobile Development
 
-Mobile app development workflow using React Native + Expo with shared Supabase backend.
+Mobile app development workflow using React Native CLI with shared Supabase backend.
 
 ## Overview
 
@@ -16,11 +16,11 @@ Mobile app development workflow using React Native + Expo with shared Supabase b
 **Shared Backend:** Uses the same Supabase project as the web app
 
 **Tech Stack:**
-- Frontend: React Native + Expo
+- Frontend: React Native CLI
 - Auth: Firebase Authentication (synced with Supabase)
 - Backend: Supabase (Postgres + Storage + Edge Functions)
 - Styling: NativeWind (Tailwind for React Native)
-- Routing: Expo Router (file-based routing)
+- Routing: React Navigation (file-based routing)
 - State: TanStack Query + Zustand
 - Push: Firebase Cloud Messaging
 - Offline: AsyncStorage with sync when online
@@ -33,12 +33,12 @@ Mobile app development workflow using React Native + Expo with shared Supabase b
 /flow-mobile setup
 ```
 
-**Creates a complete React Native + Expo mobile app** in the `mobile/` folder with:
+**Creates a complete React Native CLI mobile app** in the `mobile/` folder with:
 
 **1. Project Structure:**
 ```
 mobile/
-├── app/                    # Expo Router (file-based routing)
+├── app/                    # React Navigation (file-based routing)
 │   ├── (tabs)/            # Tab navigation screens
 │   │   ├── index.tsx      # Home screen
 │   │   ├── profile.tsx    # Profile screen
@@ -72,7 +72,7 @@ mobile/
 {
   "dependencies": {
     "expo": "~51.0.0",
-    "expo-router": "~3.5.0",
+    "@react-navigation/native": "^6.1.18",,
     "nativewind": "^2.0.11",
     "react": "18.2.0",
     "react-native": "0.74.0",
@@ -92,7 +92,7 @@ mobile/
 ```
 
 **3. Configuration Files:**
-- `app.json` - Expo config
+- `react-native.config.js` - React Native config
 - `tailwind.config.js` - NativeWind config
 - `tsconfig.json` - TypeScript config
 - `babel.config.js` - Babel config for NativeWind
@@ -119,7 +119,7 @@ mobile/
 **Setup Process:**
 1. Creates `mobile/` folder structure
 2. Installs all dependencies
-3. Configures Expo Router with file-based routing
+3. Configures React Navigation with file-based routing
 4. Sets up NativeWind (Tailwind)
 5. Configures Supabase client (shares web app credentials)
 6. Configures Firebase Auth + FCM
@@ -137,7 +137,7 @@ mobile/
 
 # The command will:
 # 1. Detect existing Supabase config from web app
-# 2. Create mobile/ folder with Expo app
+# 2. Create mobile/ folder with React Native CLI app
 # 3. Install all dependencies
 # 4. Configure everything automatically
 # 5. Create base screens and navigation
@@ -157,7 +157,7 @@ Shows the current status of the mobile app:
 
 **Output includes:**
 - Mobile folder existence
-- Expo configuration status
+- React Native CLI configuration status
 - Dependencies installation status
 - Supabase connection status
 - Firebase configuration status
@@ -171,7 +171,7 @@ Shows the current status of the mobile app:
 Maven Flow Mobile Status
 
 ✅ Mobile folder exists: mobile/
-✅ Expo configured: app.json
+✅ React Native CLI configured: react-native.config.js
 ✅ Dependencies installed: 45/45
 ✅ Supabase connected: [PROJECT_URL]
 ✅ Firebase configured: Auth + FCM
@@ -298,7 +298,7 @@ The flow will:
 1. Detect mobile PRDs in `mobile/docs/prd-*.json`
 2. Process mobile stories with mobile-app-agent
 3. Implement offline capabilities
-4. Test with Expo Go
+4. Test with iOS simulator or Android emulator
 5. Commit changes
 
 **Mobile-specific agents:**
@@ -310,11 +310,11 @@ The flow will:
 
 ## Phase 4: Test Mobile App
 
-**Test with Expo Go:**
+**Test with iOS simulator or Android emulator:**
 ```bash
 cd mobile
 pnpm start
-# Scan QR code with Expo Go app
+# Scan QR code with iOS simulator or Android emulator app
 ```
 
 **Test on device/simulator:**
@@ -353,9 +353,9 @@ eas submit --platform android
 ## Tech Stack Details
 
 ### Frontend Framework
-**React Native + Expo**
+**React Native CLI**
 - Cross-platform (iOS + Android)
-- Expo SDK 51
+- React Native CLI
 - Over-the-air updates
 
 ### Styling
@@ -366,7 +366,7 @@ eas submit --platform android
 - Dark mode support
 
 ### Routing
-**Expo Router (File-based)**
+**React Navigation (File-based)**
 - Similar to Next.js App Router
 - Type-safe navigation
 - Deep linking support
@@ -525,9 +525,9 @@ flow-prd-mobile [feature-name]
 **Mobile folder not found:**
 - Run `/flow-mobile setup` first
 
-**Expo not starting:**
+**Metro not starting:**
 - Check port 8081 is available
-- Stop only the Expo process, not all Node processes
+- Stop only the Metro process, not all Node processes
 - Use `lsof -ti:8081 | xargs kill -9`
 
 **Supabase connection failed:**
@@ -548,4 +548,4 @@ flow-prd-mobile [feature-name]
 
 ---
 
-*Mobile Development for Maven Flow - React Native + Expo with shared Supabase backend*
+*Mobile Development for Maven Flow - React Native CLI with shared Supabase backend*

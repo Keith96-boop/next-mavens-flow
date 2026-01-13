@@ -195,7 +195,7 @@ taskkill /PID <PID> /F  # Windows
 
 1. **Use web-search-prime MCP** to research:
    - "how to stop Next.js dev server on port 3000"
-   - "how to stop Expo server on port 8081"
+   - "how to stop Metro bundler on port 8081"
    - "how to stop Vite dev server"
    - "proper way to stop [specific framework] server"
 
@@ -237,7 +237,7 @@ pnpm dev
 **ALL agents must:**
 - **development-agent:** When restarting dev servers, stop only the specific server
 - **testing-agent:** When starting/stopping servers for testing, be specific
-- **mobile-app-agent:** When managing Expo/React Native servers, stop only those
+- **mobile-app-agent:** When managing React Native CLI servers, stop only those
 - **Any agent:** Never use `pkill node`, `killall node`, or similar broad commands
 
 **quality-agent will block commits that:**
@@ -471,19 +471,19 @@ When encountering errors:
 | 8 | security-agent | Auth Integration - Firebase + Supabase authentication flow |
 | 9 | development-agent | MCP Integration - MCP integrations |
 | 10 | security-agent | Security & Error Handling - Security and error handling |
-| 11 | design-agent | Mobile Design - Professional UI/UX for Expo/React Native (optional) |
+| 11 | design-agent | Mobile Design - Professional UI/UX for React Native CLI (optional) |
 
 ---
 
 ## Mobile Development Pattern (CRITICAL for mobile-app-agent)
 
-**When developing mobile features with React Native + Expo:**
+**When developing mobile features with React Native CLI:**
 
 ### Mobile App Location
 **ALL mobile development happens in the `mobile/` folder:**
 ```
 mobile/
-├── app/              # Expo Router screens (file-based routing)
+├── app/              # React Navigation screens (file-based routing)
 ├── components/       # Mobile-specific components
 ├── lib/              # Utilities (Supabase, Firebase, Storage)
 ├── hooks/            # Custom React hooks
@@ -615,7 +615,7 @@ import { Swipeable } from 'react-native-gesture-handler';
 </TouchableOpacity>
 ```
 
-### Navigation with Expo Router
+### Navigation with React Navigation
 
 **File-based routing (similar to Next.js):**
 ```
@@ -633,13 +633,13 @@ app/
 
 **Type-safe navigation:**
 ```typescript
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useNavigation, route.params } from '@react-navigation/native';
 
 // Navigate with params
 router.push('/tasks/123');
 
 // Receive params
-const { id } = useLocalSearchParams<{ id: string }>();
+const { id } = route.params<{ id: string }>();
 ```
 
 ### Push Notifications (Firebase Cloud Messaging)
@@ -680,17 +680,17 @@ messaging().setBackgroundMessageHandler(async remoteMessage => {
 ```
 
 **Lazy load screens:**
-- Use Expo Router's automatic lazy loading
+- Use React Navigation's automatic lazy loading
 - Implement code splitting for large features
 - Use dynamic imports for expensive components
 
 ### Testing on Mobile
 
-**Test with Expo Go (quickest):**
+**Test with iOS simulator or Android emulator (quickest):**
 ```bash
 cd mobile
 pnpm start
-# Scan QR code with Expo Go app
+# Scan QR code with iOS simulator or Android emulator app
 ```
 
 **Test on iOS simulator:**
@@ -715,7 +715,7 @@ pnpm android
 
 ### Server Management for Mobile
 
-**Expo server runs on port 8081. Stop ONLY Expo:**
+**Metro bundler runs on port 8081. Stop ONLY Metro:**
 
 **❌ FORBIDDEN:**
 ```bash
@@ -725,7 +725,7 @@ killall node
 
 **✅ CORRECT:**
 ```bash
-# Find Expo server
+# Find Metro bundler
 lsof -ti:8081
 # Kill ONLY that process
 kill -9 $(lsof -ti:8081)
